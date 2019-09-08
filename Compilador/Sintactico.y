@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include <conio.h>
 #include "y.tab.h"
-//#define YYDEBUG 1 //tener cuidado con este flag mas adelante con las referencias a otros archivos c no funciona
+#define YYDEBUG 1 //tener cuidado con este flag mas adelante con las referencias a otros archivos c no funciona
 
 extern int yylineno;
 FILE *yyin;
 char *yyltext;
 char *yytext;
-//yydebug = 0; //tener cuidado con el flag no funciona mas adelante sacarlo
+yydebug = 0; //tener cuidado con el flag no funciona mas adelante sacarlo
 
 %}
 
@@ -61,12 +61,14 @@ bloq_decla: VAR declaraciones ENDVAR { printf("bloq_decla \n");}
 declaraciones:  declaracion
 			| declaraciones declaracion;
 
-declaracion:	 REAL DOS_PUNTOS  lista_var
-			| STRING DOS_PUNTOS lista_var
-			| INTEGER DOS_PUNTOS lista_var
+declaracion: C_A dec_multiple C_C
 
-lista_var: lista_var COMA ID
-	| ID
+dec_multiple: 	tipo_dato C_C DOS_PUNTOS C_A ID
+				| tipo_dato COMA dec_multiple COMA ID
+
+tipo_dato: 	REAL
+			| STRING
+			| INTEGER
 
 bloque: 	sentencia 
 			| bloque sentencia 

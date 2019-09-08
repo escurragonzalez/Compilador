@@ -1,7 +1,5 @@
 var
-    float : a
-    float : c
-    string : d
+    [string,float,int] : [a,b,c]
 endvar
 
 a := 5.6 * .8 - z * 5.
