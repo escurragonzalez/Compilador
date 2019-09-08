@@ -29,7 +29,7 @@ yydebug = 0; //tener cuidado con el flag no funciona mas adelante sacarlo
 %token INTEGER
 %token STRING
 %token BEGINP
-%token IF THEN ELSE ENDIF
+%token IF ELSE
 %token REPEAT UNTIL
 %token INLIST
 %token OP_AND OP_OR OP_NOT
@@ -87,10 +87,10 @@ ciclo:	REPEAT bloque
 		
 asignacion: 	ID OP_ASIG expresion { printf("asignacion \n");}
 
-seleccion:  condicion_if bloque L_C ENDIF
-            | condicion_if bloque L_C ELSE L_A bloque L_C ENDIF
+seleccion:  condicion_if bloque L_C 
+            | condicion_if bloque L_C ELSE L_A bloque L_C
                         
-condicion_if: IF P_A condicion P_C THEN L_A
+condicion_if: IF P_A condicion P_C L_A
 
 condicion:		comparacion  
 			| comparacion OP_AND comparacion 
@@ -118,11 +118,12 @@ factor:     ID
 			| CONST_INT  
 			| CONST_REAL 
 			| CONST_STR 
+			| P_A ID P_C
 
-f_inlist: INLIST P_A ID PUNTO_Y_COMA C_A lista_expresion C_C P_C
+f_inlist: INLIST P_A ID PUNTO_Y_COMA C_A lista_expresion C_C P_C { printf("inlist \n");}
 
-lista_expresion:  ID
-            | lista_expresion PUNTO_Y_COMA ID
+lista_expresion:  expresion
+            | lista_expresion PUNTO_Y_COMA expresion
 
 %%
 

@@ -14,19 +14,12 @@
 
 DIGITO			        [0-9]
 LETRA			        [a-zA-Z]
-COMA                    [","]
-PUNTOYCOMA              [";"]
 CONST_STR               \"({DIGITO}|{LETRA}|.)*\"
-COMENTARIOS             (-\/).*(\/\-)
+COMENTARIOS             (--\/).*(\/\--)
 CONST_REAL              {DIGITO}*"."{DIGITO}*
 CONST_INT               {DIGITO}+
 ID			            {LETRA}({LETRA}|{DIGITO}|_)*
 OP_ASIG   		        [":="]
-C_A                     ["["]
-C_C                     ["]"]
-P_A                     ["("]
-P_C                     [")"]
-
 
 %%
 "var"		            { return VAR;}
@@ -36,7 +29,6 @@ P_C                     [")"]
 "string"		        { return STRING;}
 "if"			        { return IF;}
 "else"   		        { return ELSE;}
-"endif"	                { return ENDIF;}
 "repeat"			    { return REPEAT;}
 "until"			        { return UNTIL;}
 "inlist"			    { return INLIST;}
@@ -51,6 +43,8 @@ P_C                     [")"]
 ")"			            { return P_C;}
 "["                     { return C_A;}
 "]"                     { return C_C;}
+"{"                     { return L_A;}
+"}"                     { return L_C;}
 ">"						{ return CMP_MAYOR; }
 ">="					{ return CMP_MAYIG; }
 "!="					{ return CMP_DIST; }
@@ -64,8 +58,9 @@ P_C                     [")"]
 {CONST_INT}		        { yylval.str_val = strdup(yytext); return CONST_INT;}//lo manejo como string cambiar despues 
 {CONST_STR}		        { yylval.str_val = strdup(yytext); return CONST_STR;}
 {CONST_REAL}		    { yylval.str_val = strdup(yytext); return CONST_REAL;}
-{COMA}		            { return COMA;}
+","		           		{ return COMA;}
 ":"						{ return DOS_PUNTOS;}
+";"						{ return PUNTO_Y_COMA;}
 <<EOF>> 				{ yyterminate();}
 "\n"
 "\r\n"
