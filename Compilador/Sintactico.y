@@ -96,7 +96,6 @@ condicion:		comparacion
 			| comparacion OP_AND comparacion 
 			| comparacion OP_OR comparacion 
 			| OP_NEG comparacion 
-            | f_inlist //revisar despues
 			
 comparacion:	expresion CMP_MAYOR expresion
 			|	expresion CMP_MAYIG expresion
@@ -104,6 +103,8 @@ comparacion:	expresion CMP_MAYOR expresion
 			|	expresion CMP_IGUAL expresion
 			|	expresion CMP_MENOR expresion
 			|	expresion CMP_NENIG expresion
+            |	f_inlist
+
 
 expresion:		termino
 		| expresion OP_SUM termino 
