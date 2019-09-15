@@ -25,9 +25,9 @@ char *yytext;
 %token <str_val>CONST_INT //cambiar despues 
 %token <str_val>CONST_REAL
 %token <str_val>CONST_STR
-%token REAL
-%token INTEGER
-%token STRING
+%token <str_val>REAL
+%token <str_val>INTEGER
+%token <str_val>STRING
 %token BEGINP
 %token IF ELSE
 %token REPEAT UNTIL
@@ -51,20 +51,22 @@ char *yytext;
 %token PRINT
 %token READ
 
+%type<str_val> tipo_dato //i have no idea what im doing (source google)
+
 %%
 
 // Sacar los printf despues 
-prorama:   bloq_decla bloque { printf("start sysbol \n");}
+prorama:   bloq_decla bloque
 
-bloq_decla: VAR declaraciones ENDVAR { printf("bloq_decla \n");}
+bloq_decla: VAR declaraciones ENDVAR
 
 declaraciones:  declaracion
 			| declaraciones declaracion;
 
 declaracion: C_A dec_multiple C_C
 
-dec_multiple: 	tipo_dato C_C DOS_PUNTOS C_A ID
-				| tipo_dato COMA dec_multiple COMA ID
+dec_multiple: 	tipo_dato C_C DOS_PUNTOS C_A ID { asignarTipo($5,$1,yylineno); }
+				| tipo_dato COMA dec_multiple COMA ID { asignarTipo($5,$1,yylineno); }
 
 tipo_dato: 	REAL
 			| STRING
@@ -78,14 +80,14 @@ sentencia:	ciclo
 			| asignacion
 			| intout							
 
-intout: 	PRINT  CONST_STR { printf("PRINT \n");}
-	    	| READ  ID  { printf("READ \n");}
-			| PRINT  ID { printf("PRINT \n");}
+intout: 	PRINT  CONST_STR
+	    	| READ  ID  { verificarExisteId($2,yylineno); }
+			| PRINT  ID { verificarExisteId($2,yylineno); }
 		
 ciclo:	REPEAT bloque 
-		UNTIL P_A condicion P_C { printf("REPEAT \n");}
+		UNTIL P_A condicion P_C 
 		
-asignacion: 	ID OP_ASIG expresion { printf("asignacion \n");}
+asignacion: 	ID OP_ASIG expresion { verificarExisteId($1,yylineno);}
 
 seleccion:  condicion_if bloque L_C 
             | condicion_if bloque L_C ELSE L_A bloque L_C
@@ -115,13 +117,13 @@ termino: 		factor
     	| termino OP_DIV  factor 
 
 
-factor:     ID //{ verificarExisteId($1,yylineno); }
+factor:     ID { verificarExisteId($1,yylineno); }
 			| CONST_INT  
 			| CONST_REAL 
 			| CONST_STR 
-			| P_A ID P_C //{ verificarExisteId($2,yylineno); }
+			| P_A ID P_C { verificarExisteId($2,yylineno); }
 
-f_inlist: INLIST P_A ID PUNTO_Y_COMA C_A lista_expresion C_C P_C { printf("inlist \n");}
+f_inlist: INLIST P_A ID PUNTO_Y_COMA C_A lista_expresion C_C P_C
 
 lista_expresion:  expresion
             | lista_expresion PUNTO_Y_COMA expresion

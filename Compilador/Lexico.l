@@ -55,9 +55,9 @@ OP_ASIG   		        [":="]
 "or"                    { return OP_OR;}
 "not"                   { return OP_NOT;}
 {ID}			        { yylval.str_val = strdup(yytext); insertarEnTablaDeSimbolos(sinTipo,yytext,yylineno); return ID;}
-{CONST_INT}		        { yylval.str_val = strdup(yytext); insertarEnTablaDeSimbolos(tipoEntero,yytext,yylineno); return CONST_INT;}//lo manejo como string cambiar despues 
-{CONST_STR}		        { yylval.str_val = strdup(yytext); insertarEnTablaDeSimbolos(tipoCadena,yytext,yylineno); return CONST_STR;}
-{CONST_REAL}		    { yylval.str_val = strdup(yytext); insertarEnTablaDeSimbolos(tipoReal,yytext,yylineno); return CONST_REAL;}
+{CONST_INT}		        { yylval.str_val = strdup(yytext); insertarEnTablaDeSimbolos(tipoConstEntero,yytext,yylineno); return CONST_INT;}//lo manejo como string cambiar despues 
+{CONST_STR}		        { yylval.str_val = strdup(yytext); insertarEnTablaDeSimbolos(tipoConstCadena,yytext,yylineno); return CONST_STR;}
+{CONST_REAL}		    { yylval.str_val = strdup(yytext); insertarEnTablaDeSimbolos(tipoConstReal,yytext,yylineno); return CONST_REAL;}
 ","		           		{ return COMA;}
 ":"						{ return DOS_PUNTOS;}
 ";"						{ return PUNTO_Y_COMA;}

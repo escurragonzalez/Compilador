@@ -19,10 +19,13 @@ extern symrec *sym_table;
 
 enum tipoDato
 {
-    tipoEntero,
-    tipoReal,
-    tipoCadena,
-    sinTipo
+    tipoConstEntero,
+    tipoConstReal,
+    tipoConstCadena,
+    sinTipo,
+    tipoInt,
+    tipoFloat,
+    tipoString
 };
 
 symrec *putsym(char const *, int);

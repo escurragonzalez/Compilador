@@ -11,7 +11,7 @@ symrec *putsym(const char *sym_name, int sym_type)
 	ptr->name = (char *)malloc(strlen(sym_name) + 1);
 	strcpy(ptr->name,normalizar(sym_name));
 	ptr->type = sym_type;
-	if(ptr->type==tipoCadena)
+	if(ptr->type==tipoConstCadena)
 	{
 		ptr->len = strlen(sym_name);
 	}

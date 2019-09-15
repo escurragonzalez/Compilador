@@ -77,7 +77,7 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
     float aux;
     int auxint;
     switch (tipo) {
-        case tipoReal:
+        case tipoConstReal:
             sscanf(valor, "%f", &aux);
             if (isValidFloat(aux) == 1)
             {
@@ -85,7 +85,7 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
                 s = getsym(valor);
                 if (s == 0)
                 {
-                    putsym(valor,tipoReal);
+                    putsym(valor,tipoConstReal);
                 }
             }
             else
@@ -93,14 +93,14 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
                 mensajeDeError(errorRealFueraDeRango,valor,linea);
             }
         break;
-        case tipoCadena:
+        case tipoConstCadena:
             if (strlen(valor) <= CADENA_MAXIMA)
             {
                 symrec *s;
                 s = getsym(valor);
                 if (s == 0)
                 {
-                    putsym(valor,tipoCadena);
+                    putsym(valor,tipoConstCadena);
                 }
             }
             else
@@ -108,7 +108,7 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
                 mensajeDeError(errorCadenaDemasiadoLarga,valor,linea);
             }
         break;
-        case tipoEntero:
+        case tipoConstEntero:
             sscanf(valor,"%d",&auxint);
             if (isValidInt(auxint) == 1)
             {
@@ -116,7 +116,7 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
                 s = getsym(valor);
                 if (s == 0)
                 {
-                    putsym(valor,tipoEntero);
+                    putsym(valor,tipoConstEntero);
                 }
             }
             else
@@ -178,17 +178,26 @@ void getAllSymbols(FILE* pf) {
 
 char* getDataTypeName(enum tipoDato tipo){
     switch(tipo){
-        case tipoReal:
+        case tipoConstReal:
             return("const_real");
             break;
-        case tipoCadena:
+        case tipoConstCadena:
             return("const_cadena");
             break;
-        case tipoEntero:
+        case tipoConstEntero:
             return("const_entera");
             break;
         case sinTipo:
             return("sin tipo");
+            break;
+        case tipoFloat:
+            return("float");
+            break;
+        case tipoInt:
+            return("int");
+            break;
+        case tipoString:
+            return("string");
             break;
     }
 }
@@ -201,4 +210,36 @@ void verificarExisteId(char *s,int linea)
 	{
         mensajeDeError(ErrorSintactico,"Variable no declarada",linea);
 	}
+}
+
+void asignarTipo(char *id,char *tipo,int linea)
+{
+    symrec *sym;
+    sym = getsym(id);
+    if(sym!=0)
+    {
+        if(sym->type==sinTipo)
+        {
+            sym->type=obtenerTipo(id);
+        }
+        else
+        {
+            mensajeDeError(ErrorSintactico,"Variable ya declarada anteriormente",linea);
+        }
+    }
+}
+
+int obtenerTipo(char *tipoDato)
+{
+    if(strcmp(tipoDato,"float"))
+    {
+        return tipoFloat;
+    }else if(strcmp(tipoDato,"int"))
+    {
+        return tipoInt;
+    }else if(strcmp(tipoDato,"string"))
+    {
+        return tipoString;
+    }
+    return sinTipo;
 }
