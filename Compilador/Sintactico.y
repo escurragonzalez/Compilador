@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include <conio.h>
 #include "y.tab.h"
-#define YYDEBUG 1 //tener cuidado con este flag mas adelante con las referencias a otros archivos c no funciona
+//#define YYDEBUG 1 //tener cuidado con este flag mas adelante con las referencias a otros archivos c no funciona
 
 extern int yylineno;
 FILE *yyin;
 char *yyltext;
 char *yytext;
-yydebug = 0; //tener cuidado con el flag no funciona mas adelante sacarlo
+//yydebug = 0; //tener cuidado con el flag no funciona mas adelante sacarlo
 
 %}
 
@@ -115,11 +115,11 @@ termino: 		factor
     	| termino OP_DIV  factor 
 
 
-factor:     ID 
+factor:     ID //{ verificarExisteId($1,yylineno); }
 			| CONST_INT  
 			| CONST_REAL 
 			| CONST_STR 
-			| P_A ID P_C
+			| P_A ID P_C //{ verificarExisteId($2,yylineno); }
 
 f_inlist: INLIST P_A ID PUNTO_Y_COMA C_A lista_expresion C_C P_C { printf("inlist \n");}
 

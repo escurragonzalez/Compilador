@@ -4,20 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-enum tipoDeError
-{
-    ErrorSintactico,
-    ErrorLexico
-};
-
-enum tipoDato
-{
-    tipoEntero,
-    tipoReal,
-    tipoCadena,
-    sinTipo
-};
-
 //Tabla de simbolos
 typedef struct
 {
@@ -33,7 +19,10 @@ enum error
     errorRealFueraDeRango,
     errorCadenaDemasiadoLarga,
     errorIdDemasiadoLargo,
-    errorCaracterInvalido
+    errorCaracterInvalido,
+    ErrorIdNoDeclarado,
+    ErrorSintactico,
+    ErrorLexico
 };
 
 const CADENA_MAXIMA = 31;
@@ -41,6 +30,7 @@ const CADENA_MAXIMA = 31;
 void getAllSymbols(FILE* );
 char* getDataTypeName(enum tipoDato tipo);
 void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *,int );
+void verificarExisteId(char *,int);
 
 void mensajeDeError(enum error error,const char* info, int linea)
 {
@@ -66,7 +56,17 @@ void mensajeDeError(enum error error,const char* info, int linea)
         case errorCaracterInvalido:
         	printf("ERROR LEXICO. Descripcion: El caracter %s es invalido.\n",info);
         	break;
+        case ErrorIdNoDeclarado:
+		    printf("Descripcion: el id '%s' no ha sido declarado\n", info);
+		    break;
+        case ErrorSintactico:
+            printf("Error de Sintaxis Descripcion: %s\n", info);
+		    break;
+        case ErrorLexico:
+            printf("Error Léxico Descripcion: %s\n", info);
+		    break;
     }
+	
     system ("Pause");
     exit (1);
 }
@@ -100,7 +100,7 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
                 s = getsym(valor);
                 if (s == 0)
                 {
-                    putsym(valor,tipoEntero);
+                    putsym(valor,tipoCadena);
                 }
             }
             else
@@ -167,20 +167,13 @@ void getAllSymbols(FILE* pf) {
     symrec *ptr;
     char idName[CADENA_MAXIMA];
 
-    fprintf(pf,"\t%-30s\t|\t%-20s\t|\t%-32s\t|\t%-30s\n","Nombre","TipoDato","Valor","Longitud");
-    fprintf(pf,"\t--------------------------------------------------------------------------------------------------------------------\n");
+    fprintf(pf,"%-32s|\t%-20s\t|\t%-32s\t|\t%-30s\n","Nombre","TipoDato","Valor","Longitud");
+    fprintf(pf,"--------------------------------------------------------------------------------------------------------------------\n");
 
   	for (ptr = sym_table; ptr != (symrec *) 0; ptr = (symrec *)ptr->next)
     {
-        fprintf(pf,"\t%-30s\t|\t%-20s\t|\t%-32s\t|\t%-30s\n",ptr->name,getDataTypeName(ptr->type),ptr->val,ptr->len);
+        fprintf(pf,"%-32s|\t%-20s\t|\t%-32s\t|\t%-30d\n",ptr->name,getDataTypeName(ptr->type),ptr->valor,ptr->len);
     }
-}
-
-char* normalizar(char* cadena){
-	char *aux = (char *) malloc( sizeof(char) * (strlen(cadena)) + 2);
-	strcpy(aux,"_");
-	strcat(aux,cadena);
-	return aux;
 }
 
 char* getDataTypeName(enum tipoDato tipo){
@@ -198,4 +191,14 @@ char* getDataTypeName(enum tipoDato tipo){
             return("sin tipo");
             break;
     }
+}
+
+void verificarExisteId(char *s,int linea)
+{
+	symrec *sym;
+	sym = getsym(s);
+	if(sym->type==sinTipo)
+	{
+        mensajeDeError(ErrorSintactico,"Variable no declarada",linea);
+	}
 }

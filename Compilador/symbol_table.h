@@ -7,11 +7,7 @@ struct symrec
 	char *name; /* name of symbol */
 	int type;   /* type of symbol */
 	int len;	/* lenght of symbol */
-	union {
-		int intval;
-		double val;
-		char *str_val;
-	};
+	char *valor;
 	struct symrec *next; /* link field */
 };
 
@@ -21,7 +17,16 @@ typedef struct symrec symrec;
 /* The symbol table: a chain of 'struct symrec'.  */
 extern symrec *sym_table;
 
+enum tipoDato
+{
+    tipoEntero,
+    tipoReal,
+    tipoCadena,
+    sinTipo
+};
+
 symrec *putsym(char const *, int);
-symrec *getsym(char const *);
+symrec *getsym(char *);
+char* normalizar(const char*);
 
 #endif /* SYMBOL_TABLE_H */

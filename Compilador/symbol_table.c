@@ -9,23 +9,48 @@ symrec *putsym(const char *sym_name, int sym_type)
 	symrec *ptr = (symrec *)malloc(sizeof(symrec));
 
 	ptr->name = (char *)malloc(strlen(sym_name) + 1);
-	strcpy(ptr->name, sym_name);
+	strcpy(ptr->name,normalizar(sym_name));
 	ptr->type = sym_type;
-	ptr->len = strlen(sym_name);
-	ptr->val = 0; /* Set value to 0 even if fctn.  */
+	if(ptr->type==tipoCadena)
+	{
+		ptr->len = strlen(sym_name);
+	}
+	else
+	{
+		ptr->len = 0;
+	}
+	
+	if(ptr->type!=sinTipo)
+	{	
+		ptr->valor = (char *)malloc(strlen(sym_name) + 1);
+		strcpy(ptr->valor, sym_name);
+	}
+	else
+	{
+		ptr->valor = (char *)malloc((char) + 1);
+		strcpy(ptr->valor, "");
+	}
+	
 	ptr->next = (struct symrec *)sym_table;
 	sym_table = ptr;
 
 	return ptr;
 }
 
-symrec *getsym(const char *sym_name)
+symrec *getsym(char *sym_name)
 {
 	symrec *ptr;
 
 	for (ptr = sym_table; ptr != (symrec *)0; ptr = (symrec *)ptr->next)
-		if (strcmp(ptr->name, sym_name) == 0)
+		if (strcmp(ptr->name, normalizar(sym_name)) == 0)
 			return ptr;
 
 	return 0;
+}
+
+char* normalizar(const char* cadena){
+	char *aux = (char *) malloc( sizeof(char) * (strlen(cadena)) + 2);
+	strcpy(aux,"_");
+	strcat(aux,cadena);
+	return aux;
 }
