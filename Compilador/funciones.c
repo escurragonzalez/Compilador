@@ -28,9 +28,10 @@ enum error
 const CADENA_MAXIMA = 31;
 
 void getAllSymbols(FILE* );
-char* getDataTypeName(enum tipoDato tipo);
+const char* getDataTypeName(enum tipoDato tipo);
 void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *,int );
 void verificarExisteId(char *,int);
+enum tipoDato obtenerTipo(char *);
 
 void mensajeDeError(enum error error,const char* info, int linea)
 {
@@ -176,7 +177,7 @@ void getAllSymbols(FILE* pf) {
     }
 }
 
-char* getDataTypeName(enum tipoDato tipo){
+const char* getDataTypeName(enum tipoDato tipo){
     switch(tipo){
         case tipoConstReal:
             return("const_real");
@@ -193,7 +194,7 @@ char* getDataTypeName(enum tipoDato tipo){
         case tipoFloat:
             return("float");
             break;
-        case tipoInt:
+        case tipoInt:         
             return("int");
             break;
         case tipoString:
@@ -212,7 +213,7 @@ void verificarExisteId(char *s,int linea)
 	}
 }
 
-void asignarTipo(char *id,char *tipo,int linea)
+void asignarTipo(char *id,char * tipo,int linea)
 {
     symrec *sym;
     sym = getsym(id);
@@ -220,7 +221,7 @@ void asignarTipo(char *id,char *tipo,int linea)
     {
         if(sym->type==sinTipo)
         {
-            sym->type=obtenerTipo(id);
+            sym->type = obtenerTipo(tipo);
         }
         else
         {
@@ -229,15 +230,15 @@ void asignarTipo(char *id,char *tipo,int linea)
     }
 }
 
-int obtenerTipo(char *tipoDato)
+enum tipoDato obtenerTipo(char *tipoDato)
 {
-    if(strcmp(tipoDato,"float"))
+    if(strcmp(tipoDato,"float")==0)
     {
         return tipoFloat;
-    }else if(strcmp(tipoDato,"int"))
+    }else if(strcmp(tipoDato,"int")==0)
     {
         return tipoInt;
-    }else if(strcmp(tipoDato,"string"))
+    }else if(strcmp(tipoDato,"string")==0)
     {
         return tipoString;
     }

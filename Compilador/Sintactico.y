@@ -4,13 +4,15 @@
 #include <stdlib.h>
 #include <conio.h>
 #include "y.tab.h"
+#include "stack.c"
 //#define YYDEBUG 1 //tener cuidado con este flag mas adelante con las referencias a otros archivos c no funciona
 
+m10_stack_t *stVariables;
 extern int yylineno;
 FILE *yyin;
 char *yyltext;
 char *yytext;
-//yydebug = 0; //tener cuidado con el flag no funciona mas adelante sacarlo
+//yydebug = 1; //tener cuidado con el flag no funciona mas adelante sacarlo
 
 %}
 
@@ -25,9 +27,9 @@ char *yytext;
 %token <str_val>CONST_INT //cambiar despues 
 %token <str_val>CONST_REAL
 %token <str_val>CONST_STR
-%token <str_val>REAL
-%token <str_val>INTEGER
-%token <str_val>STRING
+%token REAL
+%token INTEGER
+%token STRING
 %token BEGINP
 %token IF ELSE
 %token REPEAT UNTIL
@@ -51,11 +53,8 @@ char *yytext;
 %token PRINT
 %token READ
 
-%type<str_val> tipo_dato //i have no idea what im doing (source google)
-
 %%
 
-// Sacar los printf despues 
 prorama:   bloq_decla bloque
 
 bloq_decla: VAR declaraciones ENDVAR
@@ -65,12 +64,20 @@ declaraciones:  declaracion
 
 declaracion: C_A dec_multiple C_C
 
-dec_multiple: 	tipo_dato C_C DOS_PUNTOS C_A ID { asignarTipo($5,$1,yylineno); }
-				| tipo_dato COMA dec_multiple COMA ID { asignarTipo($5,$1,yylineno); }
+dec_multiple: 	tipo_dato C_C DOS_PUNTOS C_A ID 
+				{ 
+					asignarTipo($5,top(stVariables),yylineno);
+					pop(stVariables);
+				}
+				| tipo_dato COMA dec_multiple COMA ID 
+				{ 
+					asignarTipo($5,top(stVariables),yylineno);
+					pop(stVariables);
+				}
 
-tipo_dato: 	REAL
-			| STRING
-			| INTEGER
+tipo_dato: 	REAL	{ push(stVariables,"float"); } 
+			| STRING	{ push(stVariables,"string"); } 
+			| INTEGER	{ push(stVariables,"int"); } 
 
 bloque: 	sentencia 
 			| bloque sentencia 
@@ -132,6 +139,7 @@ lista_expresion:  expresion
 
 int main(int argc,char *argv[])
 {
+	stVariables = newStack();
     if ((yyin = fopen(argv[1], "rt")) == NULL)
     {
         printf("\nNo se puede abrir el archivo: %s\n", argv[1]);
@@ -141,6 +149,7 @@ int main(int argc,char *argv[])
         yyparse();
     }
     fclose(yyin);
+	destroyStack(&stVariables);
     printf("\n\n* COMPILACION EXITOSA *\n");
 	return 0;
 }
