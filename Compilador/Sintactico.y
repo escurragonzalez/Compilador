@@ -104,7 +104,7 @@ condicion_if: IF P_A condicion P_C L_A
 condicion:		comparacion  
 			| comparacion OP_AND comparacion 
 			| comparacion OP_OR comparacion 
-			| OP_NEG comparacion 
+			| OP_NOT comparacion 
 			
 comparacion:	expresion CMP_MAYOR expresion
 			|	expresion CMP_MAYIG expresion

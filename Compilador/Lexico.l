@@ -16,7 +16,7 @@ DIGITO			        [0-9]
 LETRA			        [a-zA-Z]
 CONST_STR               \"({DIGITO}|{LETRA}|.)*\"
 COMENTARIOS             (--\/).*(\/\--)
-CONST_REAL              {DIGITO}*"."{DIGITO}*
+CONST_REAL              {DIGITO}*"."{DIGITO}+|{DIGITO}+"."{DIGITO}*
 CONST_INT               {DIGITO}+
 ID			            {LETRA}({LETRA}|{DIGITO}|_)*
 OP_ASIG   		        [":="]
