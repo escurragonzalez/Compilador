@@ -125,7 +125,7 @@ termino: 		factor
 
 
 factor:     ID { verificarExisteId($1,yylineno); }
-			| CONST_INT  
+			| CONST_INT 
 			| CONST_REAL 
 			| CONST_STR 
 			| P_A ID P_C { verificarExisteId($2,yylineno); }

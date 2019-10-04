@@ -79,7 +79,7 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
     int auxint;
     switch (tipo) {
         case tipoConstReal:
-            sscanf(valor, "%f", &aux);
+            sscanf(valor, "%.6f", &aux);
             if (isValidFloat(aux) == 1)
             {
                 symrec *s;
@@ -139,7 +139,7 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
 
 int isValidFloat(double num)
 {
-    if(num >= FLT_MIN && num <= FLT_MAX )
+    if(num >= DBL_MIN && num <= DBL_MAX )
     {
         return 1; 
 	}

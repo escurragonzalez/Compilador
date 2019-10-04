@@ -31,5 +31,6 @@ enum tipoDato
 symrec *putsym(char const *, int);
 symrec *getsym(char *);
 char* normalizar(const char*);
+char* normalizarSinComillas(const char*);
 
 #endif /* SYMBOL_TABLE_H */

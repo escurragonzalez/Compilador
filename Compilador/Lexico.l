@@ -12,12 +12,13 @@
 %option noyywrap
 %option yylineno 
 
+NEGATIVO				"-"
 DIGITO			        [0-9]
 LETRA			        [a-zA-Z]
 CONST_STR               \"({DIGITO}|{LETRA}|.)*\"
 COMENTARIOS             (--\/).*(\/\--)
-CONST_REAL              {DIGITO}*"."{DIGITO}+|{DIGITO}+"."{DIGITO}*
-CONST_INT               {DIGITO}+
+CONST_REAL              {NEGATIVO}?{DIGITO}*"."{DIGITO}+|{NEGATIVO}?{DIGITO}+"."{DIGITO}*
+CONST_INT               {NEGATIVO}?{DIGITO}+
 ID			            {LETRA}({LETRA}|{DIGITO}|_)*
 OP_ASIG   		        [":="]
 
