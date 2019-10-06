@@ -6,3 +6,4 @@ Compilador/y.tab.c
 Compilador/y.tab.h
 Compilador/.vscode/settings.json
 .vscode/c_cpp_properties.json
+Compilador/intermedia.txt

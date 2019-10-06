@@ -222,6 +222,8 @@ lista_expresion:  expresion
             | lista_expresion PUNTO_Y_COMA expresion
             | lista_expresion COMA expresion
 			{
+				//Es por la asignacion multiple se tiene que ignorar en el caso que sobren expresiones
+				//Ej [a,b]:=[1,2,2,2,2,2,2]
 				if(esAsig && !is_queue_empty(&qVariablesAsig))
 				{
 					dequeue(&qVariablesAsig,aux_str);
@@ -247,8 +249,8 @@ int main(int argc,char *argv[])
         yyparse();
     }
     fclose(yyin);
-	//Acá escribir el archivo intermedia.txt con lo que esta en en qPolaca
-	print_queue(&qPolaca);
+	print_file_queue(&qPolaca);//Archivo intermedia.txt
+	print_queue(&qPolaca);//Muestra polaca por consola
 	destroyStack(&stVariables);
 	free_queue(&qVariables);
 	free_queue(&qVariablesAsig);

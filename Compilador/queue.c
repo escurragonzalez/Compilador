@@ -105,3 +105,28 @@ void free_queue(t_queue *p)
 	p->last = NULL;
 	p->counter = 0;
 }
+
+void print_file_queue(t_queue *p)
+{
+	FILE *pf; 
+	pf = fopen("intermedia.txt","w"); 
+
+	t_node *aux;
+
+	if (is_queue_empty(p))
+		return;
+
+	aux = p->first;
+
+	while(aux)
+	{
+		fprintf(pf,"%s\n",aux->info);
+
+		if (aux->next)
+			printf("\n");
+
+		aux = aux->next;
+	}
+	
+	fclose(pf); 
+}

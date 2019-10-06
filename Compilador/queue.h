@@ -24,5 +24,6 @@ void top_queue(t_queue *, char *);
 int is_queue_empty(t_queue *);
 void print_queue(t_queue *);
 void free_queue(t_queue *);
+void print_file_queue(t_queue *p);
 
 #endif
