@@ -82,7 +82,7 @@ void print_queue(t_queue *p)
 		printf("%s", aux->info);
 
 		if (aux->next)
-			printf(", ");
+			printf(" ");
 		else 
 			printf("\n");
 

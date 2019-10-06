@@ -10,6 +10,7 @@
 
 m10_stack_t *stVariables;
 t_queue qVariables;
+t_queue qPolaca;
 extern int yylineno;
 FILE *yyin;
 char *yyltext;
@@ -102,13 +103,32 @@ sentencia:	ciclo
 			| intout							
 
 intout: 	PRINT  CONST_STR
-	    	| READ  ID  { verificarExisteId($2,yylineno); }
-			| PRINT  ID { verificarExisteId($2,yylineno); }
+			{
+				enqueue(&qPolaca, $2);
+				enqueue(&qPolaca, "PRINT");					
+			}
+	    	| READ  ID  
+			{ 
+				verificarExisteId($2,yylineno);
+				enqueue(&qPolaca, $2);
+				enqueue(&qPolaca, "READ");	
+			}
+			| PRINT  ID
+			{
+				verificarExisteId($2,yylineno);
+				enqueue(&qPolaca, $2);
+				enqueue(&qPolaca, "PRINT");	
+			}
 		
 ciclo:	REPEAT bloque 
 		UNTIL P_A condicion P_C 
 		
-asignacion: 	ID OP_ASIG expresion { verificarExisteId($1,yylineno);}
+asignacion: 	ID OP_ASIG expresion 
+				{
+					verificarExisteId($1,yylineno);
+					enqueue(&qPolaca, $1);
+					enqueue(&qPolaca, ":=");
+				}
 
 seleccion:  condicion_if bloque L_C 
             | condicion_if bloque L_C ELSE L_A bloque L_C
@@ -130,19 +150,23 @@ comparacion:	expresion CMP_MAYOR expresion
 
 
 expresion:		termino
-		| expresion OP_SUM termino 
-		| expresion OP_RES termino
+		| expresion OP_SUM termino { enqueue(&qPolaca,"+"); }
+		| expresion OP_RES termino { enqueue(&qPolaca,"-"); }
 
 termino: 		factor 
-		| termino OP_MUL  factor
-    	| termino OP_DIV  factor 
+		| termino OP_MUL  factor { enqueue(&qPolaca,"*"); }
+    	| termino OP_DIV  factor { enqueue(&qPolaca,"/"); }
 
 
-factor:     ID { verificarExisteId($1,yylineno); }
-			| CONST_INT 
-			| CONST_REAL 
-			| CONST_STR 
-			| P_A ID P_C { verificarExisteId($2,yylineno); }
+factor:     ID 
+			{ 
+				verificarExisteId($1,yylineno);
+				enqueue(&qPolaca,$1);
+			}
+			| CONST_INT { enqueue(&qPolaca,$1); }
+			| CONST_REAL { enqueue(&qPolaca,$1); }
+			| CONST_STR { enqueue(&qPolaca,$1); }
+			| P_A expresion P_C
 
 f_inlist: INLIST P_A ID PUNTO_Y_COMA C_A lista_expresion C_C P_C
 
@@ -155,6 +179,7 @@ int main(int argc,char *argv[])
 {
 	stVariables = newStack();
 	init_queue(&qVariables);
+	init_queue(&qPolaca);
     if ((yyin = fopen(argv[1], "rt")) == NULL)
     {
         printf("\nNo se puede abrir el archivo: %s\n", argv[1]);
@@ -164,8 +189,11 @@ int main(int argc,char *argv[])
         yyparse();
     }
     fclose(yyin);
+	//Acá escribir el archivo intermedia.txt con lo que esta en en qPolaca
+	print_queue(&qPolaca);
 	destroyStack(&stVariables);
 	free_queue(&qVariables);
+	free_queue(&qPolaca);
     printf("\n\n* COMPILACION EXITOSA *\n");
 	return 0;
 }
