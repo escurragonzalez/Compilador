@@ -9,6 +9,8 @@ endvar
 d := 5.6 * .8 - 5 * 5.
 e := 99.
 e := .9999
+[a,b,c]:=[ 1 , 2 - 9 , 3 * 8,a,a,a,a,a]
+
 read a
 
 print "Probando print"

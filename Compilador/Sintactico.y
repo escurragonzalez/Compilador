@@ -10,12 +10,14 @@
 
 m10_stack_t *stVariables;
 t_queue qVariables;
+t_queue qVariablesAsig;
 t_queue qPolaca;
 extern int yylineno;
 FILE *yyin;
 char *yyltext;
 char *yytext;
 char aux_str[30];
+int esAsig=0;
 //yydebug = 1; //tener cuidado con el flag no funciona mas adelante sacarlo
 
 %}
@@ -68,25 +70,39 @@ declaraciones:  declaracion
 
 declaracion: C_A dec_multiple C_C
 
-dec_multiple: 	lista_tipo_dato C_C DOS_PUNTOS C_A lista_id 
+dec_multiple: 	lista_tipo_dato C_C DOS_PUNTOS { esAsig=0; } C_A lista_id 
 
 lista_tipo_dato: tipo_dato 
 				| tipo_dato COMA lista_tipo_dato
 
 lista_id: ID
 			{
-				if(!is_queue_empty(&qVariables)) 
+				//Declaracion de variables
+				if(!is_queue_empty(&qVariables) && !esAsig) 
 				{
 					dequeue(&qVariables,aux_str);
 					asignarTipo($1,aux_str,yylineno);
 				}
+				//Asignacion de variables
+				if(esAsig)
+				{
+					verificarExisteId($1,yylineno);
+					enqueue(&qVariablesAsig,$1);
+				}
 			}
 		| lista_id COMA ID
 			{
-				if(!is_queue_empty(&qVariables)) 
+				//Declaracion de variables
+				if(!is_queue_empty(&qVariables) && !esAsig) 
 				{
 					dequeue(&qVariables,aux_str);
 					asignarTipo($3,aux_str,yylineno);
+				}
+				//Asignacion de variables
+				if(esAsig)
+				{
+					verificarExisteId($3,yylineno);
+					enqueue(&qVariablesAsig,$3);
 				}
 			}
 
@@ -129,6 +145,9 @@ asignacion: 	ID OP_ASIG expresion
 					enqueue(&qPolaca, $1);
 					enqueue(&qPolaca, ":=");
 				}
+				| asignacion_multiple
+
+asignacion_multiple: C_A { esAsig=1; } lista_id C_C OP_ASIG C_A lista_expresion C_C { esAsig=0; }
 
 seleccion:  condicion_if bloque L_C 
             | condicion_if bloque L_C ELSE L_A bloque L_C
@@ -161,17 +180,55 @@ termino: 		factor
 factor:     ID 
 			{ 
 				verificarExisteId($1,yylineno);
-				enqueue(&qPolaca,$1);
+				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
+				{
+					enqueue(&qPolaca,$1);
+				}
 			}
-			| CONST_INT { enqueue(&qPolaca,$1); }
-			| CONST_REAL { enqueue(&qPolaca,$1); }
-			| CONST_STR { enqueue(&qPolaca,$1); }
+			| CONST_INT 
+			{ 
+				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
+				{
+					enqueue(&qPolaca,$1);
+				}
+			}
+			| CONST_REAL 
+			{ 
+				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
+				{
+					enqueue(&qPolaca,$1);
+				}
+			}
+			| CONST_STR 
+			{
+				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
+				{
+					enqueue(&qPolaca,$1);
+				}	
+			}
 			| P_A expresion P_C
 
 f_inlist: INLIST P_A ID PUNTO_Y_COMA C_A lista_expresion C_C P_C
 
 lista_expresion:  expresion
+			{
+				if(esAsig && !is_queue_empty(&qVariablesAsig))
+				{
+					dequeue(&qVariablesAsig,aux_str);
+					enqueue(&qPolaca,aux_str);
+					enqueue(&qPolaca,":=");
+				}
+			}
             | lista_expresion PUNTO_Y_COMA expresion
+            | lista_expresion COMA expresion
+			{
+				if(esAsig && !is_queue_empty(&qVariablesAsig))
+				{
+					dequeue(&qVariablesAsig,aux_str);
+					enqueue(&qPolaca,aux_str);
+					enqueue(&qPolaca,":=");
+				}
+			}
 
 %%
 
@@ -179,6 +236,7 @@ int main(int argc,char *argv[])
 {
 	stVariables = newStack();
 	init_queue(&qVariables);
+	init_queue(&qVariablesAsig);
 	init_queue(&qPolaca);
     if ((yyin = fopen(argv[1], "rt")) == NULL)
     {
@@ -193,6 +251,7 @@ int main(int argc,char *argv[])
 	print_queue(&qPolaca);
 	destroyStack(&stVariables);
 	free_queue(&qVariables);
+	free_queue(&qVariablesAsig);
 	free_queue(&qPolaca);
     printf("\n\n* COMPILACION EXITOSA *\n");
 	return 0;
