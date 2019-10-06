@@ -16,7 +16,8 @@ NEGATIVO				"-"
 DIGITO			        [0-9]
 LETRA			        [a-zA-Z]
 CONST_STR               \"({DIGITO}|{LETRA}|.)*\"
-COMENTARIOS             (--\/).*(\/\--)
+CADENA                  ({LETRA}|{DIGITO}|\.|\:|\;\-|\_|\!|_|" "|\n|\s|\t|\r|\@|\%\º)*
+COMENTARIOS             (--\/){CADENA}(\/\--)|(--\/){CADENA}(--\/){CADENA}(\/\--){CADENA}(\/\--)|(--\/)(--\/){CADENA}(\/\--){CADENA}(\/\--)|(--\/){CADENA}(\/\--){CADENA}(\/\--)(\/\--)
 CONST_REAL              {NEGATIVO}?{DIGITO}*"."{DIGITO}+|{NEGATIVO}?{DIGITO}+"."{DIGITO}*
 CONST_INT               {NEGATIVO}?{DIGITO}+
 ID			            {LETRA}({LETRA}|{DIGITO}|_)*

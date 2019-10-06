@@ -5,13 +5,16 @@
 #include <conio.h>
 #include "y.tab.h"
 #include "stack.c"
+#include "queue.c"
 //#define YYDEBUG 1 //tener cuidado con este flag mas adelante con las referencias a otros archivos c no funciona
 
 m10_stack_t *stVariables;
+t_queue qVariables;
 extern int yylineno;
 FILE *yyin;
 char *yyltext;
 char *yytext;
+char aux_str[30];
 //yydebug = 1; //tener cuidado con el flag no funciona mas adelante sacarlo
 
 %}
@@ -64,20 +67,31 @@ declaraciones:  declaracion
 
 declaracion: C_A dec_multiple C_C
 
-dec_multiple: 	tipo_dato C_C DOS_PUNTOS C_A ID 
-				{ 
-					asignarTipo($5,top(stVariables),yylineno);
-					pop(stVariables);
-				}
-				| tipo_dato COMA dec_multiple COMA ID 
-				{ 
-					asignarTipo($5,top(stVariables),yylineno);
-					pop(stVariables);
-				}
+dec_multiple: 	lista_tipo_dato C_C DOS_PUNTOS C_A lista_id 
 
-tipo_dato: 	REAL	{ push(stVariables,"float"); } 
-			| STRING	{ push(stVariables,"string"); } 
-			| INTEGER	{ push(stVariables,"int"); } 
+lista_tipo_dato: tipo_dato 
+				| tipo_dato COMA lista_tipo_dato
+
+lista_id: ID
+			{
+				if(!is_queue_empty(&qVariables)) 
+				{
+					dequeue(&qVariables,aux_str);
+					asignarTipo($1,aux_str,yylineno);
+				}
+			}
+		| lista_id COMA ID
+			{
+				if(!is_queue_empty(&qVariables)) 
+				{
+					dequeue(&qVariables,aux_str);
+					asignarTipo($3,aux_str,yylineno);
+				}
+			}
+
+tipo_dato: 	REAL	{ enqueue(&qVariables,"float"); } 
+			| STRING	{ enqueue(&qVariables,"string"); } 
+			| INTEGER	{ enqueue(&qVariables,"int"); } 
 
 bloque: 	sentencia 
 			| bloque sentencia 
@@ -140,6 +154,7 @@ lista_expresion:  expresion
 int main(int argc,char *argv[])
 {
 	stVariables = newStack();
+	init_queue(&qVariables);
     if ((yyin = fopen(argv[1], "rt")) == NULL)
     {
         printf("\nNo se puede abrir el archivo: %s\n", argv[1]);
@@ -150,6 +165,7 @@ int main(int argc,char *argv[])
     }
     fclose(yyin);
 	destroyStack(&stVariables);
+	free_queue(&qVariables);
     printf("\n\n* COMPILACION EXITOSA *\n");
 	return 0;
 }
