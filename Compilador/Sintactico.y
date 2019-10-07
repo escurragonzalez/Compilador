@@ -9,6 +9,7 @@
 //#define YYDEBUG 1 //tener cuidado con este flag mas adelante con las referencias a otros archivos c no funciona
 
 m10_stack_t *stVariables;
+m10_stack_t *stack_pos;		// pila por polaca
 t_queue qVariables;
 t_queue qVariablesAsig;
 t_queue qPolaca;
@@ -18,6 +19,7 @@ char *yyltext;
 char *yytext;
 char aux_str[30];
 int esAsig=0;
+int contadorIf=0;		//contador por polaca 
 //yydebug = 1; //tener cuidado con el flag no funciona mas adelante sacarlo
 
 %}
@@ -150,21 +152,39 @@ asignacion: 	ID OP_ASIG expresion
 asignacion_multiple: C_A { esAsig=1; } lista_id C_C OP_ASIG C_A lista_expresion C_C { esAsig=0; }
 
 seleccion:  condicion_if bloque L_C 
-            | condicion_if bloque L_C ELSE L_A bloque L_C
+            | condicion_if bloque L_C ELSE { //bloque de polaca
+				char aux2[20]; 
+				sprintf(aux2,"#elseif_%s",top(stack_pos)); 
+				pop(stack_pos); 
+				enqueue(&qPolaca, aux2);
+				} L_A bloque L_C
                         
-condicion_if: IF P_A condicion P_C L_A
+condicion_if: IF { //bloque de polaca
+				char auxif[10];
+				contadorIf++;
+				sprintf(auxif, "#if_%d", contadorIf);
+				sprintf(aux_str, "%d", contadorIf);
+				push(stack_pos, aux_str);
+				enqueue(&qPolaca, auxif);
+			}
+			  P_A condicion P_C { //bloque de polaca
+				char aux[10];
+				sprintf(aux, "#thenif_%s", top(stack_pos));
+				enqueue(&qPolaca, aux);
+			}
+			  L_A
 
-condicion:		comparacion  
-			| comparacion OP_AND comparacion 
-			| comparacion OP_OR comparacion 
-			| OP_NOT comparacion 
+condicion:	comparacion  
+			| comparacion OP_AND comparacion	{ enqueue(&qPolaca, "and"); }
+			| comparacion OP_OR comparacion 	{ enqueue(&qPolaca, "or"); }
+			| OP_NOT comparacion 				{ enqueue(&qPolaca, "not"); }
 			
-comparacion:	expresion CMP_MAYOR expresion
-			|	expresion CMP_MAYIG expresion
-			|	expresion CMP_DIST expresion
-			|	expresion CMP_IGUAL expresion
-			|	expresion CMP_MENOR expresion
-			|	expresion CMP_NENIG expresion
+comparacion:	expresion CMP_MAYOR expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto(">")); enqueue(&qPolaca, "CMP");  enqueue(&qPolaca, expr); }
+			|	expresion CMP_MAYIG  expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto(">=")); enqueue(&qPolaca, "CMP"); enqueue(&qPolaca, expr); }
+			|	expresion CMP_DIST expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto("!=")); enqueue(&qPolaca, "CMP"); enqueue(&qPolaca, expr); }
+			|	expresion CMP_IGUAL expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto("==")); enqueue(&qPolaca, "CMP"); enqueue(&qPolaca, expr); }
+			|	expresion CMP_MENOR expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto("<")); enqueue(&qPolaca, "CMP");  enqueue(&qPolaca, expr); }
+			|	expresion CMP_NENIG expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto("<=")); enqueue(&qPolaca, "CMP"); enqueue(&qPolaca, expr); }
             |	f_inlist
 
 
@@ -208,7 +228,7 @@ factor:     ID
 			}
 			| P_A expresion P_C
 
-f_inlist: INLIST P_A ID PUNTO_Y_COMA C_A lista_expresion C_C P_C
+f_inlist: INLIST P_A ID {enqueue(&qPolaca,$3);enqueue(&qPolaca,"=");} PUNTO_Y_COMA C_A lista_expresion C_C P_C
 
 lista_expresion:  expresion
 			{
@@ -237,6 +257,7 @@ lista_expresion:  expresion
 int main(int argc,char *argv[])
 {
 	stVariables = newStack();
+	stack_pos = newStack();	//inicia por polaca
 	init_queue(&qVariables);
 	init_queue(&qVariablesAsig);
 	init_queue(&qPolaca);
@@ -252,6 +273,7 @@ int main(int argc,char *argv[])
 	print_file_queue(&qPolaca);//Archivo intermedia.txt
 	print_queue(&qPolaca);//Muestra polaca por consola
 	destroyStack(&stVariables);
+	destroyStack(&stack_pos); 		// destruye por polaca
 	free_queue(&qVariables);
 	free_queue(&qVariablesAsig);
 	free_queue(&qPolaca);

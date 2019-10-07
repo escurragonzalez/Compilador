@@ -25,6 +25,16 @@ enum error
     ErrorLexico
 };
 
+enum tipoSalto{
+	normal,
+	inverso
+};
+
+enum tipoCondicion{
+	condicionIf,
+	condicionWhile
+};
+
 const CADENA_MAXIMA = 31;
 
 void getAllSymbols(FILE* );
@@ -243,4 +253,21 @@ enum tipoDato obtenerTipo(char *tipoDato)
         return tipoString;
     }
     return sinTipo;
+}
+
+// Funcion para obtener comprarador de Assembler
+char *obtenerSalto(char *comparador){
+	if(strcmp(comparador,"==")==0)
+		return("BEQ");
+	if(strcmp(comparador,">")==0)
+		return("BGT");
+	if(strcmp(comparador,"<")==0)
+		return("BLT");
+	if(strcmp(comparador,">=")==0)
+		return("BGE");
+	if(strcmp(comparador,"<=")==0)
+		return("BLE");
+	if(strcmp(comparador,"!=")==0)
+		return("BNE");
+
 }

@@ -8,7 +8,6 @@ symrec *putsym(const char *sym_name, int sym_type)
 {
 	symrec *ptr = (symrec *)malloc(sizeof(symrec));
 
-	
 	ptr->type = sym_type;
 	
 	if(ptr->type==tipoConstCadena)
@@ -21,9 +20,6 @@ symrec *putsym(const char *sym_name, int sym_type)
 		ptr->name = (char *)malloc(strlen(sym_name) + 1);
 		strcpy(ptr->name,normalizar(sym_name));
 	}
-	
-	
-	
 	if(ptr->type==tipoConstCadena)
 	{
 		ptr->len = strlen(sym_name);
@@ -60,8 +56,6 @@ symrec *getsym(char *sym_name)
 
 	return 0;
 }
-
-
 
 char* normalizarSinComillas(const char* cadena){
 	char *aux = (char *) malloc( sizeof(char) * (strlen(cadena)) + 2);
