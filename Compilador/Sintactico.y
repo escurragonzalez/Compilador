@@ -166,7 +166,7 @@ asignacion: 	ID OP_ASIG expresion
 				{
 					verificarExisteId($1,yylineno);
 					enqueue(&qPolaca, $1);
-					enqueue(&qPolaca, ":=");
+					enqueue(&qPolaca, "=");
 				}
 				| asignacion_multiple
 
@@ -276,7 +276,19 @@ factor:     ID
 			}
 			| P_A expresion P_C
 
-f_inlist: INLIST P_A ID {enqueue(&qPolaca,$3);enqueue(&qPolaca,"=");} PUNTO_Y_COMA C_A lista_expresion C_C P_C
+f_inlist: INLIST P_A ID 
+			{
+				enqueue(&qPolaca,$3);
+				sprintf(aux_str, "_aux_%s", top(stack_pos));
+				//insertar en tabla de simbolos a _aux_
+				enqueue(&qPolaca,aux_str);
+				auxOperaciones++;
+				enqueue(&qPolaca,"=");
+			} 
+			PUNTO_Y_COMA C_A lista_expresion C_C P_C
+			{
+				enqueue(&qPolaca,"#jmp");
+			}
 
 lista_expresion:  expresion
 			{
@@ -284,10 +296,27 @@ lista_expresion:  expresion
 				{
 					dequeue(&qVariablesAsig,aux_str);
 					enqueue(&qPolaca,aux_str);
-					enqueue(&qPolaca,":=");
+					enqueue(&qPolaca,"=");
+				}
+				if(!esAsig)
+				{
+					sprintf(aux_str, "_aux_%s", top(stack_pos));
+					enqueue(&qPolaca,aux_str);
+					enqueue(&qPolaca,"CMP");
+					enqueue(&qPolaca,"BEQ");
+					sprintf(aux_str,"bloq_%s", top(stack_pos));
+					enqueue(&qPolaca,aux_str);
 				}
 			}
             | lista_expresion PUNTO_Y_COMA expresion
+			{
+				sprintf(aux_str, "_aux_%s", top(stack_pos));
+				enqueue(&qPolaca,aux_str);
+				enqueue(&qPolaca,"CMP");
+				enqueue(&qPolaca,"BEQ");
+				sprintf(aux_str,"bloq_%s", top(stack_pos));
+				enqueue(&qPolaca,aux_str);
+			}
             | lista_expresion COMA expresion
 			{
 				//Es por la asignacion multiple se tiene que ignorar en el caso que sobren expresiones
@@ -296,7 +325,7 @@ lista_expresion:  expresion
 				{
 					dequeue(&qVariablesAsig,aux_str);
 					enqueue(&qPolaca,aux_str);
-					enqueue(&qPolaca,":=");
+					enqueue(&qPolaca,"=");
 				}
 			}
 
