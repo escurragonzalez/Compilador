@@ -270,6 +270,7 @@ int main(int argc,char *argv[])
         yyparse();
     }
     fclose(yyin);
+	generarASM(&qPolaca);
 	print_file_queue(&qPolaca);//Archivo intermedia.txt
 	print_queue(&qPolaca);//Muestra polaca por consola
 	destroyStack(&stVariables);

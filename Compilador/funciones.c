@@ -1,5 +1,6 @@
 #include "symbol_table.h"
 #include "symbol_table.c"
+#include "queue.h"
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -270,4 +271,51 @@ char *obtenerSalto(char *comparador){
 	if(strcmp(comparador,"!=")==0)
 		return("BNE");
 
+}
+
+void generarASM(t_queue *p)
+{
+    t_queue* aux=p;
+    int i;
+    int nroAuxReal=0;
+    int nroAuxEntero=0;
+    char aux1[50]="aux\0";
+    
+    symrec *ptr;
+
+    FILE* pf=fopen("final.asm","w+");
+    if(!pf){
+        printf("Error al guardar el archivo assembler.\n");
+        exit(1);
+    }
+    //Cabecera
+    fprintf(pf,"include macros2.asm\n");
+    fprintf(pf,"include number.asm\n\n");
+    fprintf(pf,".MODEL LARGE\n.STACK 200h\n.386\n.387\n.DATA\n\n\tMAXTEXTSIZE equ 50\n");
+    //Variables y Constantes
+    for (ptr = sym_table; ptr != (symrec *) 0; ptr = (symrec *)ptr->next)
+    {
+        fprintf(pf,"\t@%s ",ptr->name);
+        switch(ptr->type){
+            case tipoInt:
+            case tipoFloat:
+                fprintf(pf,"\tDD 0.0\n");
+                break;
+            case tipoString:
+                fprintf(pf,"\tDB MAXTEXTSIZE dup (?),'$'\n");
+                break;
+            case tipoConstEntero:
+            case tipoConstReal:
+                fprintf(pf,"\tDD %s\n",ptr->valor);
+                break;
+            case tipoConstCadena:
+                fprintf(pf,"\tDB \"%s\",'$',%d dup(?)\n",ptr->valor,50-ptr->len);
+                break;   
+        }
+    }
+
+    fprintf(pf,"\n.CODE\n.startup\n\tmov AX,@DATA\n\tmov DS,AX\n\n\tFINIT\n\n");
+    fprintf(pf,"\tmov ah, 4ch\n\tint 21h\n");
+    fprintf(pf,"\nend");
+    fclose(pf);
 }
