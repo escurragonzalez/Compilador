@@ -19,7 +19,10 @@ char *yyltext;
 char *yytext;
 char aux_str[30];
 int esAsig=0;
-int contadorIf=0;		//contador por polaca 
+int contCondicion=0;		//contador por polaca 
+char auxEtiquetas[10];
+int auxOperaciones=0;
+
 //yydebug = 1; //tener cuidado con el flag no funciona mas adelante sacarlo
 
 %}
@@ -138,8 +141,26 @@ intout: 	PRINT  CONST_STR
 				enqueue(&qPolaca, "PRINT");	
 			}
 		
-ciclo:	REPEAT bloque 
+ciclo:	REPEAT 
+		{
+			contCondicion++;
+			sprintf(auxEtiquetas, "#repeat_%d:", contCondicion);
+			sprintf(aux_str, "%d", contCondicion);
+			push(stack_pos, aux_str);
+			enqueue(&qPolaca,auxEtiquetas);
+			sprintf(auxEtiquetas, "#bloq_%d:", contCondicion);
+			enqueue(&qPolaca,auxEtiquetas);
+		} bloque 
 		UNTIL P_A condicion P_C 
+		{
+			invertirSalto(&qPolaca);
+			sprintf(aux_str,"#repeat_%s",top(stack_pos));
+			enqueue(&qPolaca, aux_str);
+			
+			sprintf(aux_str,"#fin_%s:",top(stack_pos));
+			enqueue(&qPolaca, aux_str);
+			pop(stack_pos);
+		}
 		
 asignacion: 	ID OP_ASIG expresion 
 				{
@@ -152,49 +173,76 @@ asignacion: 	ID OP_ASIG expresion
 asignacion_multiple: C_A { esAsig=1; } lista_id C_C OP_ASIG C_A lista_expresion C_C { esAsig=0; }
 
 seleccion:  condicion_if bloque L_C 
-            | condicion_if bloque L_C ELSE { //bloque de polaca
-				char aux2[20]; 
-				sprintf(aux2,"#elseif_%s",top(stack_pos)); 
-				pop(stack_pos); 
-				enqueue(&qPolaca, aux2);
-				} L_A bloque L_C
+				{
+					sprintf(aux_str,"#fin_%s:",top(stack_pos));
+					enqueue(&qPolaca, aux_str);
+					pop(stack_pos);
+				}
+            | condicion_if bloque L_C 
+			{
+				sprintf(aux_str,"#jmp fin_%s",top(stack_pos));
+				enqueue(&qPolaca, aux_str);
+			}
+			ELSE { 
+				sprintf(auxEtiquetas,"#elseif_%s:",top(stack_pos)); 
+				enqueue(&qPolaca, auxEtiquetas);
+				} 
+				L_A bloque L_C
+				{
+					sprintf(aux_str,"#fin_%s:",top(stack_pos));
+					enqueue(&qPolaca, aux_str);
+					pop(stack_pos);
+				}
                         
-condicion_if: IF { //bloque de polaca
-				char auxif[10];
-				contadorIf++;
-				sprintf(auxif, "#if_%d", contadorIf);
-				sprintf(aux_str, "%d", contadorIf);
+condicion_if: IF { 
+				contCondicion++;
+				sprintf(aux_str, "%d", contCondicion);
 				push(stack_pos, aux_str);
-				enqueue(&qPolaca, auxif);
 			}
-			  P_A condicion P_C { //bloque de polaca
-				char aux[10];
-				sprintf(aux, "#thenif_%s", top(stack_pos));
-				enqueue(&qPolaca, aux);
+			  P_A condicion P_C { 
+				sprintf(auxEtiquetas, "#fin_%s", top(stack_pos));
+				enqueue(&qPolaca, auxEtiquetas);
 			}
-			  L_A
+			L_A
+			{
+				sprintf(auxEtiquetas, "#bloq_%s:", top(stack_pos));
+				enqueue(&qPolaca, auxEtiquetas);
+			}
 
-condicion:	comparacion  
-			| comparacion OP_AND comparacion	{ enqueue(&qPolaca, "and"); }
-			| comparacion OP_OR comparacion 	{ enqueue(&qPolaca, "or"); }
-			| OP_NOT comparacion 				{ enqueue(&qPolaca, "not"); }
+condicion:	comparacion 
+			| comparacion		
+			{ 
+				sprintf(aux_str,"#fin_%s",top(stack_pos));
+				enqueue(&qPolaca,aux_str);			
+			}
+			OP_AND comparacion	
+			| comparacion 
+			{
+				invertirSalto(&qPolaca);
+				sprintf(aux_str,"#jmp bloq_%s",top(stack_pos));
+				enqueue(&qPolaca,aux_str);
+			}
+			OP_OR comparacion 	
+			| OP_NOT comparacion  
+			{ 
+				invertirSalto(&qPolaca);
+			}
 			
-comparacion:	expresion CMP_MAYOR expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto(">")); enqueue(&qPolaca, "CMP");  enqueue(&qPolaca, expr); }
-			|	expresion CMP_MAYIG  expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto(">=")); enqueue(&qPolaca, "CMP"); enqueue(&qPolaca, expr); }
-			|	expresion CMP_DIST expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto("!=")); enqueue(&qPolaca, "CMP"); enqueue(&qPolaca, expr); }
-			|	expresion CMP_IGUAL expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto("==")); enqueue(&qPolaca, "CMP"); enqueue(&qPolaca, expr); }
-			|	expresion CMP_MENOR expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto("<")); enqueue(&qPolaca, "CMP");  enqueue(&qPolaca, expr); }
-			|	expresion CMP_NENIG expresion	{ char expr[4];  sprintf(expr, "%s", obtenerSalto("<=")); enqueue(&qPolaca, "CMP"); enqueue(&qPolaca, expr); }
+comparacion:	expresion CMP_MAYOR expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BLE"); }
+			|	expresion CMP_MAYIG  expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BLT"); }
+			|	expresion CMP_DIST expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BEQ"); }
+			|	expresion CMP_IGUAL expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BNE"); }
+			|	expresion CMP_MENOR expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BGE"); }
+			|	expresion CMP_NENIG expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BGT"); }
             |	f_inlist
 
-
 expresion:		termino
-		| expresion OP_SUM termino { enqueue(&qPolaca,"+"); }
-		| expresion OP_RES termino { enqueue(&qPolaca,"-"); }
+		| expresion OP_SUM termino { enqueue(&qPolaca,"+"); auxOperaciones++; }
+		| expresion OP_RES termino { enqueue(&qPolaca,"-"); auxOperaciones++; }
 
 termino: 		factor 
-		| termino OP_MUL  factor { enqueue(&qPolaca,"*"); }
-    	| termino OP_DIV  factor { enqueue(&qPolaca,"/"); }
+		| termino OP_MUL  factor { enqueue(&qPolaca,"*"); auxOperaciones++; }
+    	| termino OP_DIV  factor { enqueue(&qPolaca,"/"); auxOperaciones++; }
 
 
 factor:     ID 
@@ -270,7 +318,7 @@ int main(int argc,char *argv[])
         yyparse();
     }
     fclose(yyin);
-	generarASM(&qPolaca);
+	generarASM(&qPolaca,auxOperaciones);
 	print_file_queue(&qPolaca);//Archivo intermedia.txt
 	print_queue(&qPolaca);//Muestra polaca por consola
 	destroyStack(&stVariables);

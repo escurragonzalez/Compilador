@@ -26,16 +26,6 @@ enum error
     ErrorLexico
 };
 
-enum tipoSalto{
-	normal,
-	inverso
-};
-
-enum tipoCondicion{
-	condicionIf,
-	condicionWhile
-};
-
 const CADENA_MAXIMA = 31;
 
 void getAllSymbols(FILE* );
@@ -257,28 +247,37 @@ enum tipoDato obtenerTipo(char *tipoDato)
 }
 
 // Funcion para obtener comprarador de Assembler
-char *obtenerSalto(char *comparador){
-	if(strcmp(comparador,"==")==0)
-		return("BEQ");
-	if(strcmp(comparador,">")==0)
-		return("BGT");
-	if(strcmp(comparador,"<")==0)
-		return("BLT");
-	if(strcmp(comparador,">=")==0)
-		return("BGE");
-	if(strcmp(comparador,"<=")==0)
-		return("BLE");
-	if(strcmp(comparador,"!=")==0)
-		return("BNE");
-
+char *invertirSalto(t_queue *comparador){
+	if(strcmp(comparador->last->info,"BEQ")==0)
+	{
+		strcpy(comparador->last->info,"BNE");
+	}
+	else if(strcmp(comparador->last->info,"BNE")==0)
+	{
+		strcpy(comparador->last->info,"BEQ");
+	}
+	else if(strcmp(comparador->last->info,"BGT")==0)
+	{
+		strcpy(comparador->last->info,"BLT");
+	}
+	else if(strcmp(comparador->last->info,"BLT")==0)
+	{
+		strcpy(comparador->last->info,"BGT");
+	}
+	else if(strcmp(comparador->last->info,"BGE")==0)
+	{
+		strcpy(comparador->last->info,"BLE");
+	}
+	else if(strcmp(comparador->last->info,"BLE")==0)
+	{
+		strcpy(comparador->last->info,"BGE");
+	}
 }
 
-void generarASM(t_queue *p)
+void generarASM(t_queue *p,int auxOperaciones)
 {
     t_queue* aux=p;
     int i;
-    int nroAuxReal=0;
-    int nroAuxEntero=0;
     char aux1[50]="aux\0";
     
     symrec *ptr;
@@ -313,6 +312,13 @@ void generarASM(t_queue *p)
                 break;   
         }
     }
+
+    //Auxiliares que necesito
+    for(i=0;i<auxOperaciones;i++)
+	{
+		fprintf(pf,"\t@_auxR%d \tDD 0.0\n",i);
+		fprintf(pf,"\t@_auxE%d \tDW 0\n",i);
+	}
 
     fprintf(pf,"\n.CODE\n.startup\n\tmov AX,@DATA\n\tmov DS,AX\n\n\tFINIT\n\n");
     fprintf(pf,"\tmov ah, 4ch\n\tint 21h\n");
