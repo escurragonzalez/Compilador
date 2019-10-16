@@ -33,6 +33,8 @@ const char* getDataTypeName(enum tipoDato tipo);
 void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *,int );
 void verificarExisteId(char *,int);
 enum tipoDato obtenerTipo(char *);
+void recorrerPolaca(FILE *,t_queue *);
+char * prepararEtiqueta(char *);
 
 void mensajeDeError(enum error error,const char* info, int linea)
 {
@@ -317,11 +319,71 @@ void generarASM(t_queue *p,int auxOperaciones)
     for(i=0;i<auxOperaciones;i++)
 	{
 		fprintf(pf,"\t@_auxR%d \tDD 0.0\n",i);
-		fprintf(pf,"\t@_auxE%d \tDW 0\n",i);
+		fprintf(pf,"\t@_auxE%d \tDD 0\n",i);
 	}
+
+    recorrerPolaca(pf,aux);
 
     fprintf(pf,"\n.CODE\n.startup\n\tmov AX,@DATA\n\tmov DS,AX\n\n\tFINIT\n\n");
     fprintf(pf,"\tmov ah, 4ch\n\tint 21h\n");
     fprintf(pf,"\nend");
     fclose(pf);
+}
+
+void recorrerPolaca(FILE *pf,t_queue *p)
+{
+    char token[30];
+    while(!is_queue_empty(p))
+    {
+        dequeue(p,token);
+
+        // >
+        if(strcmp(token,"BLE")==0)
+        {
+            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjbe\t\t");
+        }
+
+        //<
+        if(strcmp(token,"BGE")==0)
+        {
+            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjae\t\t");
+        }
+
+        //!=
+        if(strcmp(token,"BEQ")==0)
+        {
+            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tje\t\t");
+        }
+
+        //==
+        if(strcmp(token,"BNE")==0)
+        {
+            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjne\t\t");
+        }
+
+        //>=
+        if(strcmp(token,"BLT")==0)
+        {
+            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjb\t\t");
+        }
+
+        //<=
+        if(strcmp(token,"BGT")==0)
+        {
+            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tja\t\t");
+        }
+
+        //ETIQUETAS
+        if(strchr(token, '#')!=NULL)
+        {
+            fprintf(pf,"%s\n",prepararEtiqueta(token));
+        }        
+    }
+}
+
+char* prepararEtiqueta(char *etiq)
+{ 
+    //Remueve el primer caracter
+    memmove(&etiq[0], &etiq[1], strlen(etiq));
+    return etiq;
 }

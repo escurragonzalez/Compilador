@@ -15,6 +15,7 @@ t_queue qVariablesAsig;
 t_queue qPolaca;
 extern int yylineno;
 FILE *yyin;
+FILE *arch_reglas;
 char *yyltext;
 char *yytext;
 char aux_str[30];
@@ -66,19 +67,19 @@ int auxOperaciones=0;
 
 %%
 
-prorama:   bloq_decla bloque
+prorama:   bloq_decla bloque {fprintf(arch_reglas,"prorama:   bloq_decla bloque\n");}
 
-bloq_decla: VAR declaraciones ENDVAR
+bloq_decla: VAR declaraciones ENDVAR {fprintf(arch_reglas,"bloq_decla: VAR declaraciones ENDVAR\n");}
 
-declaraciones:  declaracion
-			| declaraciones declaracion;
+declaraciones:  declaracion {fprintf(arch_reglas,"declaraciones:  declaracion\n");}
+			| declaraciones declaracion {fprintf(arch_reglas,"declaraciones: declaraciones declaracion\n");};
 
-declaracion: C_A dec_multiple C_C
+declaracion: C_A dec_multiple C_C {fprintf(arch_reglas,"declaracion: [ dec_multiple ] \n");}
 
-dec_multiple: 	lista_tipo_dato C_C DOS_PUNTOS { esAsig=0; } C_A lista_id 
+dec_multiple: 	lista_tipo_dato C_C DOS_PUNTOS { esAsig=0; } C_A lista_id {fprintf(arch_reglas,"dec_multiple: 	lista_tipo_dato ] : [ lista_id\n");}
 
-lista_tipo_dato: tipo_dato 
-				| tipo_dato COMA lista_tipo_dato
+lista_tipo_dato: tipo_dato  {fprintf(arch_reglas,"lista_tipo_dato: tipo_dato\n");}
+				| tipo_dato COMA lista_tipo_dato {fprintf(arch_reglas,"lista_tipo_dato: tipo_dato , lista_tipo_dato\n");}
 
 lista_id: ID
 			{
@@ -94,6 +95,7 @@ lista_id: ID
 					verificarExisteId($1,yylineno);
 					enqueue(&qVariablesAsig,$1);
 				}
+				fprintf(arch_reglas,"lista_id: ID\n");
 			}
 		| lista_id COMA ID
 			{
@@ -109,36 +111,40 @@ lista_id: ID
 					verificarExisteId($3,yylineno);
 					enqueue(&qVariablesAsig,$3);
 				}
+				fprintf(arch_reglas,"lista_id: lista_id , ID\n");
 			}
 
-tipo_dato: 	REAL	{ enqueue(&qVariables,"float"); } 
-			| STRING	{ enqueue(&qVariables,"string"); } 
-			| INTEGER	{ enqueue(&qVariables,"int"); } 
+tipo_dato: 	REAL	{ enqueue(&qVariables,"float"); fprintf(arch_reglas,"tipo_dato: 	REAL\n");} 
+			| STRING	{ enqueue(&qVariables,"string"); fprintf(arch_reglas,"tipo_dato: 	STRING\n");} 
+			| INTEGER	{ enqueue(&qVariables,"int"); fprintf(arch_reglas,"tipo_dato: 	 INTEGER\n");} 
 
-bloque: 	sentencia 
-			| bloque sentencia 
+bloque: 	sentencia 		   {fprintf(arch_reglas,"bloque: 	sentencia\n");}
+			| bloque sentencia {fprintf(arch_reglas,"bloque: 	bloque sentencia\n");}
 
-sentencia:	ciclo
-			| seleccion 
-			| asignacion
-			| intout							
+sentencia:	ciclo {fprintf(arch_reglas,"sentencia:	ciclo \n");}
+			| seleccion  {fprintf(arch_reglas,"sentencia:	seleccion\n");}
+			| asignacion {fprintf(arch_reglas,"sentencia:	asignacion\n");}
+			| intout {fprintf(arch_reglas,"sentencia:	intout\n");}							
 
 intout: 	PRINT  CONST_STR
 			{
 				enqueue(&qPolaca, $2);
-				enqueue(&qPolaca, "PRINT");					
+				enqueue(&qPolaca, "PRINT");	
+				fprintf(arch_reglas,"intout: PRINT  CONST_STR\n");
 			}
 	    	| READ  ID  
 			{ 
 				verificarExisteId($2,yylineno);
 				enqueue(&qPolaca, $2);
 				enqueue(&qPolaca, "READ");	
+				fprintf(arch_reglas,"intout: READ  ID \n");
 			}
 			| PRINT  ID
 			{
 				verificarExisteId($2,yylineno);
 				enqueue(&qPolaca, $2);
 				enqueue(&qPolaca, "PRINT");	
+				fprintf(arch_reglas,"intout: PRINT  ID \n");
 			}
 		
 ciclo:	REPEAT 
@@ -160,6 +166,8 @@ ciclo:	REPEAT
 			sprintf(aux_str,"#fin_%s:",top(stack_pos));
 			enqueue(&qPolaca, aux_str);
 			pop(stack_pos);
+			
+			fprintf(arch_reglas,"ciclo:	REPEAT UNTIL ( condicion )\n");
 		}
 		
 asignacion: 	ID OP_ASIG expresion 
@@ -167,16 +175,18 @@ asignacion: 	ID OP_ASIG expresion
 					verificarExisteId($1,yylineno);
 					enqueue(&qPolaca, $1);
 					enqueue(&qPolaca, "=");
+					fprintf(arch_reglas,"asignacion: ID = expresion \n");
 				}
-				| asignacion_multiple
+				| asignacion_multiple {fprintf(arch_reglas,"asignacion: asignacion_multiple\n");}
 
-asignacion_multiple: C_A { esAsig=1; } lista_id C_C OP_ASIG C_A lista_expresion C_C { esAsig=0; }
+asignacion_multiple: C_A { esAsig=1; } lista_id C_C OP_ASIG C_A lista_expresion C_C { esAsig=0; fprintf(arch_reglas,"asignacion_multiple: [ lista_id ] = [ lista_expresion ]\n");}
 
 seleccion:  condicion_if bloque L_C 
 				{
 					sprintf(aux_str,"#fin_%s:",top(stack_pos));
 					enqueue(&qPolaca, aux_str);
 					pop(stack_pos);
+					fprintf(arch_reglas,"seleccion: condicion_if bloque } \n");
 				}
             | condicion_if bloque L_C 
 			{
@@ -192,6 +202,7 @@ seleccion:  condicion_if bloque L_C
 					sprintf(aux_str,"#fin_%s:",top(stack_pos));
 					enqueue(&qPolaca, aux_str);
 					pop(stack_pos);
+					fprintf(arch_reglas,"seleccion: condicion_if bloque }  ELSE { bloque }\n");
 				}
                         
 condicion_if: IF { 
@@ -207,42 +218,44 @@ condicion_if: IF {
 			{
 				sprintf(auxEtiquetas, "#bloq_%s:", top(stack_pos));
 				enqueue(&qPolaca, auxEtiquetas);
+				fprintf(arch_reglas,"condicion_if: IF ( condicion ) {\n");
 			}
 
-condicion:	comparacion 
+condicion:	comparacion {fprintf(arch_reglas,"condicion:	comparacion \n");}
 			| comparacion		
 			{ 
 				sprintf(aux_str,"#fin_%s",top(stack_pos));
 				enqueue(&qPolaca,aux_str);			
 			}
-			OP_AND comparacion	
+			OP_AND comparacion	{fprintf(arch_reglas,"condicion: comparacion OP_AND comparacion \n");}
 			| comparacion 
 			{
 				invertirSalto(&qPolaca);
 				sprintf(aux_str,"#jmp bloq_%s",top(stack_pos));
 				enqueue(&qPolaca,aux_str);
 			}
-			OP_OR comparacion 	
+			OP_OR comparacion {fprintf(arch_reglas,"condicion: comparacion OP_OR comparacion \n");}	
 			| OP_NOT comparacion  
 			{ 
 				invertirSalto(&qPolaca);
+				fprintf(arch_reglas,"condicion: OP_NOT comparacion\n");
 			}
 			
-comparacion:	expresion CMP_MAYOR expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BLE"); }
-			|	expresion CMP_MAYIG  expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BLT"); }
-			|	expresion CMP_DIST expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BEQ"); }
-			|	expresion CMP_IGUAL expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BNE"); }
-			|	expresion CMP_MENOR expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BGE"); }
-			|	expresion CMP_NENIG expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BGT"); }
-            |	f_inlist
+comparacion:	expresion CMP_MAYOR expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BLE"); fprintf(arch_reglas,"comparacion: expresion > expresion\n");}
+			|	expresion CMP_MAYIG  expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BLT"); fprintf(arch_reglas,"comparacion: expresion >=  expresion\n");}
+			|	expresion CMP_DIST expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BEQ"); fprintf(arch_reglas,"comparacion: expresion != expresion\n");}
+			|	expresion CMP_IGUAL expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BNE"); fprintf(arch_reglas,"comparacion: expresion == expresion\n");}
+			|	expresion CMP_MENOR expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BGE"); fprintf(arch_reglas,"comparacion: expresion < expresion\n");}
+			|	expresion CMP_NENIG expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BGT"); fprintf(arch_reglas,"comparacion: expresion <= expresion\n");}
+            |	f_inlist {fprintf(arch_reglas,"comparacion: f_inlist\n");}
 
-expresion:		termino
-		| expresion OP_SUM termino { enqueue(&qPolaca,"+"); auxOperaciones++; }
-		| expresion OP_RES termino { enqueue(&qPolaca,"-"); auxOperaciones++; }
+expresion:		termino {fprintf(arch_reglas,"expresion: termino\n");}
+		| expresion OP_SUM termino { enqueue(&qPolaca,"+"); auxOperaciones++; fprintf(arch_reglas,"expresion: expresion + termino\n");}
+		| expresion OP_RES termino { enqueue(&qPolaca,"-"); auxOperaciones++; fprintf(arch_reglas,"expresion: expresion - termino\n");}
 
-termino: 		factor 
-		| termino OP_MUL  factor { enqueue(&qPolaca,"*"); auxOperaciones++; }
-    	| termino OP_DIV  factor { enqueue(&qPolaca,"/"); auxOperaciones++; }
+termino: 		factor  {fprintf(arch_reglas,"termino: factor\n");}
+		| termino OP_MUL  factor { enqueue(&qPolaca,"*"); auxOperaciones++; fprintf(arch_reglas,"termino: termino *  factor\n");}
+    	| termino OP_DIV  factor { enqueue(&qPolaca,"/"); auxOperaciones++; fprintf(arch_reglas,"termino: termino /  factor\n");}
 
 
 factor:     ID 
@@ -252,6 +265,7 @@ factor:     ID
 				{
 					enqueue(&qPolaca,$1);
 				}
+				fprintf(arch_reglas,"factor: ID\n");
 			}
 			| CONST_INT 
 			{ 
@@ -259,6 +273,7 @@ factor:     ID
 				{
 					enqueue(&qPolaca,$1);
 				}
+				fprintf(arch_reglas,"factor: CONST_INT\n");
 			}
 			| CONST_REAL 
 			{ 
@@ -266,6 +281,7 @@ factor:     ID
 				{
 					enqueue(&qPolaca,$1);
 				}
+				fprintf(arch_reglas,"factor: CONST_REAL\n");
 			}
 			| CONST_STR 
 			{
@@ -273,14 +289,16 @@ factor:     ID
 				{
 					enqueue(&qPolaca,$1);
 				}	
+				fprintf(arch_reglas,"factor: CONST_STR\n");
 			}
-			| P_A expresion P_C
+			| P_A expresion P_C {fprintf(arch_reglas,"factor: ( expresion )\n");}
 
 f_inlist: INLIST P_A ID 
 			{
 				enqueue(&qPolaca,$3);
-				sprintf(aux_str, "_aux_%s", top(stack_pos));
-				//insertar en tabla de simbolos a _aux_
+				sprintf(aux_str, "aux_%s", top(stack_pos));
+				insertarEnTablaDeSimbolos(3,aux_str,yylineno);
+				asignarTipo(aux_str,"float",yylineno);
 				enqueue(&qPolaca,aux_str);
 				auxOperaciones++;
 				enqueue(&qPolaca,"=");
@@ -288,6 +306,7 @@ f_inlist: INLIST P_A ID
 			PUNTO_Y_COMA C_A lista_expresion C_C P_C
 			{
 				enqueue(&qPolaca,"#jmp");
+				fprintf(arch_reglas,"f_inlist: INLIST ( ID ; [ lista_expresion ] )\n");
 			}
 
 lista_expresion:  expresion
@@ -307,6 +326,7 @@ lista_expresion:  expresion
 					sprintf(aux_str,"bloq_%s", top(stack_pos));
 					enqueue(&qPolaca,aux_str);
 				}
+				fprintf(arch_reglas,"lista_expresion:  expresion\n");
 			}
             | lista_expresion PUNTO_Y_COMA expresion
 			{
@@ -316,6 +336,7 @@ lista_expresion:  expresion
 				enqueue(&qPolaca,"BEQ");
 				sprintf(aux_str,"bloq_%s", top(stack_pos));
 				enqueue(&qPolaca,aux_str);
+				fprintf(arch_reglas,"lista_expresion:  lista_expresion ; expresion\n");
 			}
             | lista_expresion COMA expresion
 			{
@@ -327,6 +348,7 @@ lista_expresion:  expresion
 					enqueue(&qPolaca,aux_str);
 					enqueue(&qPolaca,"=");
 				}
+				fprintf(arch_reglas,"lista_expresion:  lista_expresion , expresion\n");
 			}
 
 %%
@@ -338,6 +360,12 @@ int main(int argc,char *argv[])
 	init_queue(&qVariables);
 	init_queue(&qVariablesAsig);
 	init_queue(&qPolaca);
+ 
+	arch_reglas = fopen("reglas.txt","w"); 
+	if (!arch_reglas)
+        printf("\nNo se puede abrir el archivo reglas.txt \n");
+	 
+	
     if ((yyin = fopen(argv[1], "rt")) == NULL)
     {
         printf("\nNo se puede abrir el archivo: %s\n", argv[1]);
@@ -347,6 +375,7 @@ int main(int argc,char *argv[])
         yyparse();
     }
     fclose(yyin);
+	fclose(arch_reglas);
 	generarASM(&qPolaca,auxOperaciones);
 	print_file_queue(&qPolaca);//Archivo intermedia.txt
 	print_queue(&qPolaca);//Muestra polaca por consola
