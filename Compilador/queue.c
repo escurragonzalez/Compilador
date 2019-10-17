@@ -79,13 +79,7 @@ void print_queue(t_queue *p)
 
 	while(aux)
 	{
-		printf("%s", aux->info);
-
-		if (aux->next)
-			printf(" ");
-		else 
-			printf("\n");
-
+		printf("%s\n", aux->info);
 		aux = aux->next;
 	}
 }
@@ -121,9 +115,6 @@ void print_file_queue(t_queue *p)
 	while(aux)
 	{
 		fprintf(pf,"%s\n",aux->info);
-
-		if (aux->next)
-			printf("\n");
 
 		aux = aux->next;
 	}

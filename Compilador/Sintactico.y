@@ -376,9 +376,9 @@ int main(int argc,char *argv[])
     }
     fclose(yyin);
 	fclose(arch_reglas);
-	generarASM(&qPolaca,auxOperaciones);
 	print_file_queue(&qPolaca);//Archivo intermedia.txt
 	print_queue(&qPolaca);//Muestra polaca por consola
+	generarASM(&qPolaca,auxOperaciones);
 	destroyStack(&stVariables);
 	destroyStack(&stack_pos); 		// destruye por polaca
 	free_queue(&qVariables);
