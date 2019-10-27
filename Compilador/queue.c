@@ -10,7 +10,7 @@ void enqueue(t_queue *p, char *d)
 {
 	t_node *n = (t_node *) malloc(sizeof(t_node));
 	n->info = (char *) malloc(sizeof(char) * 30);
-	
+	n->tipo = sinTipo;
 	if (n == NULL)
 		exit(-1);
 
@@ -25,6 +25,12 @@ void enqueue(t_queue *p, char *d)
 	p->last = n;
 
 	n->pos = p->counter++;
+}
+
+void enqueueType(t_queue *p, char *d,_tipoDato tipo)
+{
+	enqueue(p,d);
+	p->last->tipo=tipo;
 }
 
 void dequeue(t_queue *p, char *d)

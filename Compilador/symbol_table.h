@@ -28,6 +28,8 @@ enum tipoDato
     tipoString
 };
 
+typedef enum tipoDato _tipoDato; 
+
 symrec *putsym(char const *, int);
 symrec *getsym(char *);
 char* normalizar(const char*);

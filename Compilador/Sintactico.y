@@ -173,7 +173,7 @@ ciclo:	REPEAT
 asignacion: 	ID OP_ASIG expresion 
 				{
 					verificarExisteId($1,yylineno);
-					enqueue(&qPolaca, $1);
+					enqueueType(&qPolaca, $1,obtenerTipoDatoId($1));
 					enqueue(&qPolaca, "=");
 					fprintf(arch_reglas,"asignacion: ID = expresion \n");
 				}
@@ -263,7 +263,7 @@ factor:     ID
 				verificarExisteId($1,yylineno);
 				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
 				{
-					enqueue(&qPolaca,$1);
+					enqueueType(&qPolaca,$1,obtenerTipoDatoId($1));
 				}
 				fprintf(arch_reglas,"factor: ID\n");
 			}
@@ -271,7 +271,7 @@ factor:     ID
 			{ 
 				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
 				{
-					enqueue(&qPolaca,$1);
+					enqueueType(&qPolaca,$1,tipoConstEntero);
 				}
 				fprintf(arch_reglas,"factor: CONST_INT\n");
 			}
@@ -279,7 +279,7 @@ factor:     ID
 			{ 
 				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
 				{
-					enqueue(&qPolaca,$1);
+					enqueueType(&qPolaca,$1,tipoConstReal);
 				}
 				fprintf(arch_reglas,"factor: CONST_REAL\n");
 			}
@@ -287,7 +287,7 @@ factor:     ID
 			{
 				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
 				{
-					enqueue(&qPolaca,$1);
+					enqueueType(&qPolaca,$1,tipoConstCadena);
 				}	
 				fprintf(arch_reglas,"factor: CONST_STR\n");
 			}

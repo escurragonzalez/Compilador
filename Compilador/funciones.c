@@ -35,6 +35,7 @@ void verificarExisteId(char *,int);
 enum tipoDato obtenerTipo(char *);
 void recorrerPolaca(FILE *,t_queue *);
 char * prepararEtiqueta(char *);
+symrec *buscarId(char *);
 
 void mensajeDeError(enum error error,const char* info, int linea)
 {
@@ -208,12 +209,24 @@ const char* getDataTypeName(enum tipoDato tipo){
 
 void verificarExisteId(char *s,int linea)
 {
-	symrec *sym;
-	sym = getsym(s);
-	if(sym->type==sinTipo)
+	if(buscarId(s)->type==sinTipo)
 	{
         mensajeDeError(ErrorSintactico,"Variable no declarada",linea);
 	}
+}
+
+symrec *buscarId(char *s)
+{
+	symrec *sym;
+	sym = getsym(s);
+    return sym;
+}
+
+_tipoDato obtenerTipoDatoId(char *id)
+{
+	symrec *sym;
+	sym = getsym(id);
+    return sym->type;
 }
 
 void asignarTipo(char *id,char * tipo,int linea)
@@ -274,6 +287,19 @@ char *invertirSalto(t_queue *comparador){
 	{
 		strcpy(comparador->last->info,"BGE");
 	}
+}
+
+int verificarCompatible(int a,int b)
+{
+	if(a==b)
+		return 1;
+	if(a==tipoConstEntero && b==tipoInt || b==tipoConstEntero && a==tipoInt )
+		return 1;
+	if(a==tipoConstReal && b==tipoFloat || b==tipoConstReal && a==tipoFloat )
+		return 1;
+	if(a==tipoConstCadena && b==tipoString || b==tipoConstCadena && a==tipoString )
+		return 1;
+	return 0;
 }
 
 void generarASM(t_queue *p,int auxOperaciones)
