@@ -23,6 +23,7 @@ void enqueue(t_queue *, char *);
 void enqueueType(t_queue *, char *,_tipoDato);
 void set_in_pos_in_queue(t_queue *, int, char *);
 void dequeue(t_queue *, char *);
+void dequeueNode(t_queue *,t_node *);
 void top_queue(t_queue *, char *);
 int is_queue_empty(t_queue *);
 void print_queue(t_queue *);

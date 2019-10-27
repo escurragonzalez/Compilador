@@ -47,6 +47,22 @@ void dequeue(t_queue *p, char *d)
 	p->counter--;
 }
 
+void dequeueNode(t_queue *p,t_node *d)
+{
+	d->info = (char *) malloc(sizeof(char) * 30);
+	t_node *aux = p->first;
+	strcpy(d->info, aux->info);
+	d->tipo=aux->tipo;
+	p->first = aux->next;
+	
+	if (p->first == NULL)
+		p->last = NULL;
+
+	free(aux);
+
+	p->counter--;
+}
+
 void set_in_pos_in_queue(t_queue *p, int pos, char *d)
 {
 	int i;

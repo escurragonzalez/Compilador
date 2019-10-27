@@ -358,52 +358,97 @@ void generarASM(t_queue *p,int auxOperaciones)
 
 void recorrerPolaca(FILE *pf,t_queue *p)
 {
-    char token[30];
+    char aux1[50]="aux\0";
+    char aux2[10];
+	int nroAux=0;
+    t_node* nodo;
     while(!is_queue_empty(p))
     {
-        dequeue(p,token);
+        dequeueNode(p,nodo);
+
+        //Variables y Constantes
+        if(buscarId(nodo->info)!=NULL)
+        {
+            fprintf(pf,"\tfild \t@%s\n",nodo->info);
+        }
+
+        if(strcmp(nodo->info,"*")==0)
+        {
+            fprintf(pf,"\tfmul\n");
+            strcpy(aux1,"_auxR");
+            itoa(nroAux,aux2,10);
+            strcat(aux1,aux2);
+            fprintf(pf,"\tfstp \t@%s\n", aux1);
+            strcpy(nodo->info,aux1);
+            fprintf(pf,"\tfild \t@%s\n",nodo->info);            
+            nroAux++;
+        }
 
         // >
-        if(strcmp(token,"BLE")==0)
+        if(strcmp(nodo->info,"BLE")==0)
         {
             fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjbe\t\t");
         }
 
         //<
-        if(strcmp(token,"BGE")==0)
+        if(strcmp(nodo->info,"BGE")==0)
         {
             fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjae\t\t");
         }
 
         //!=
-        if(strcmp(token,"BEQ")==0)
+        if(strcmp(nodo->info,"BEQ")==0)
         {
             fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tje\t\t");
         }
 
         //==
-        if(strcmp(token,"BNE")==0)
+        if(strcmp(nodo->info,"BNE")==0)
         {
             fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjne\t\t");
         }
 
         //>=
-        if(strcmp(token,"BLT")==0)
+        if(strcmp(nodo->info,"BLT")==0)
         {
             fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjb\t\t");
         }
 
         //<=
-        if(strcmp(token,"BGT")==0)
+        if(strcmp(nodo->info,"BGT")==0)
         {
             fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tja\t\t");
         }
 
         //ETIQUETAS
-        if(strchr(token, '#')!=NULL)
+        if(strchr(nodo->info, '#')!=NULL)
         {
-            fprintf(pf,"%s\n",prepararEtiqueta(token));
-        }        
+            fprintf(pf,"%s\n",prepararEtiqueta(nodo->info));
+        }   
+//----------------------------------
+        //Print
+        if(strcmp(nodo->info,"PRINT")==0)
+        {
+            fprintf(pf,"\tMOV AH, 09h\n");
+            fprintf(pf,"\tlea DX, @%s\n","id");
+            fprintf(pf,"\tint 21h\n");               
+        }
+
+        if(strcmp(nodo->info,"READ")==0)
+        {
+            switch(nodo->tipo)
+            {
+                case tipoFloat:
+                    fprintf(pf,"\tGetInteger \t@%s\n","id");
+                break;
+                case tipoInt:
+                    fprintf(pf,"\tgetFloat \t@%s\n","id");
+                    break;
+                case tipoString:
+                    fprintf(pf,"\tgetString \t@%s\n","id");
+                    break;	
+            }
+        }     
     }
 }
 

@@ -34,5 +34,6 @@ symrec *putsym(char const *, int);
 symrec *getsym(char *);
 char* normalizar(const char*);
 char* normalizarSinComillas(const char*);
+char* reemplazarCaracter(char *);
 
 #endif /* SYMBOL_TABLE_H */

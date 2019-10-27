@@ -26,6 +26,7 @@ symrec *putsym(const char *sym_name, int sym_type)
 		ptr->valor = (char *)malloc(strlen(sym_name) + 1);		
 		strcpy(ptr->name,normalizarSinComillas(sym_name));
 		strcpy(ptr->valor, normalizarSinComillas(sym_name));
+		ptr->name = reemplazarCaracter(ptr->name);
 	}
 	else
 	{
@@ -76,5 +77,23 @@ char* normalizar(const char* cadena){
 	char *aux = (char *) malloc( sizeof(char) * (strlen(cadena)) + 2);
 	strcpy(aux,"_");
 	strcat(aux,cadena);
+	reemplazarCaracter(aux);
+	return aux;
+}
+
+char * reemplazarCaracter(char * aux){
+	int i=0;
+	for(i = 0; i <= strlen(aux); i++)
+  	{
+  		if(aux[i] == '\t' || aux[i] == '\r' || aux[i] == ' ')  
+		{
+  			aux[i] = '_';
+ 		}
+
+		if(aux[i] == '.')  
+		{
+  			aux[i] = 'p';
+ 		}
+	}
 	return aux;
 }
