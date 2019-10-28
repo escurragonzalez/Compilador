@@ -374,21 +374,61 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         if(buscarId(nodo->info)!=NULL)
         {
             pushSt(stAsm,nodo->info,nodo->tipo);
-            //fprintf(pf,"\tfild \t@_%s\n",nodo->info);
         }
 
         if(strcmp(nodo->info,"*")==0)
         {
+            topSt(stAsm,d);
+        	fprintf(pf,"\tfld \t@%s\n",normalizar(d->head->data));
+            pop(stAsm);
+			topSt(stAsm,d);
+        	fprintf(pf,"\tfld \t@%s\n",normalizar(d->head->data));
+            pop(stAsm);
             fprintf(pf,"\tfmul\n");
             strcpy(aux1,"_auxR");
             itoa(nroAux,aux2,10);
             strcat(aux1,aux2);
             fprintf(pf,"\tfstp \t@%s\n", aux1);
             strcpy(nodo->info,aux1);
-            fprintf(pf,"\tfild \t@%s\n",nodo->info);            
+            pushSt(stAsm,nodo->info,tipoFloat);
             nroAux++;
         }
 
+        //Asignacion 
+        if(strcmp(nodo->info,":=")==0)
+        {
+            topSt(stAsm,d);
+            switch(d->head->type)
+            {
+                case tipoInt:
+                case tipoConstEntero:
+                    fprintf(pf,"\tfild \t@_%s\n",d->head->data);
+                    pop(stAsm);
+                    topSt(stAsm,d);
+                    fprintf(pf,"\tfistp \t@_%s\n",d->head->data);
+                    pop(stAsm);
+                break;
+                case tipoFloat:
+                case tipoConstReal:
+                    fprintf(pf,"\tfld \t@%s\n",normalizar(d->head->data));
+                    pop(stAsm);
+                    topSt(stAsm,d);
+                    fprintf(pf,"\tfstp \t@%s\n",normalizar(d->head->data));
+                    pop(stAsm);
+                break;
+                case tipoConstCadena:
+                case tipoString:
+                    fprintf(pf,"\tmov ax, @DATA\n\tmov ds, ax\n\tmov es, ax\n");
+                    fprintf(pf,"\tmov si, OFFSET\t@%s\n", d->head->data);
+                    pop(stAsm);
+                    topSt(stAsm,d);
+                    fprintf(pf,"\tmov di, OFFSET\t@%s\n",d->head->data);
+                    fprintf(pf,"\tcall copiar\n");
+                    pop(stAsm);
+                break;
+            }
+        }
+            
         // >
         if(strcmp(nodo->info,"BLE")==0)
         {
