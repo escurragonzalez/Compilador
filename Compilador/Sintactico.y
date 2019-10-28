@@ -174,7 +174,7 @@ asignacion: 	ID OP_ASIG expresion
 				{
 					verificarExisteId($1,yylineno);
 					enqueueType(&qPolaca, $1,obtenerTipoDatoId($1));
-					enqueue(&qPolaca, "=");
+					enqueue(&qPolaca, ":=");
 					fprintf(arch_reglas,"asignacion: ID = expresion \n");
 				}
 				| asignacion_multiple {fprintf(arch_reglas,"asignacion: asignacion_multiple\n");}
