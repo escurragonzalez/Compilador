@@ -1,7 +1,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 #include <stdlib.h>
-#include "symbol_table.h"
+#include "tipodato.h"
 
 typedef struct s_node
 {

@@ -1,17 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-
-
-struct m10_stack_entry {
-  char *data;
-  struct m10_stack_entry *next;
-};
-
-struct m10_stack_t
-{
-  struct m10_stack_entry *head;
-  size_t stackSize; 
-};
+#include "stack.h"
 
 struct m10_stack_t *newStack(void)
 {
@@ -22,18 +11,7 @@ struct m10_stack_t *newStack(void)
     stack->stackSize = 0;
   }
   return stack;
-};
-
-char *copyString(char *);
-void push(struct m10_stack_t *, char *value);
-char *top(struct m10_stack_t *);
-void pop(struct m10_stack_t *);
-void clear (struct m10_stack_t *);
-void destroyStack(struct m10_stack_t **);
-
-typedef struct m10_stack_t m10_stack_t;
-extern m10_stack_t *st;
-extern m10_stack_t *stIdType;
+}
 
 char *copyString(char *str)
 {
@@ -53,9 +31,18 @@ void push(struct m10_stack_t *theStack, char *value)
     theStack->head = entry;
     theStack->stackSize++;
   }
-  else
+}
+
+void pushSt(struct m10_stack_t *theStack, char *value,_tipoDato t)
+{
+  struct m10_stack_entry *entry = malloc(sizeof *entry); 
+  if (entry)
   {
-    // handle error here
+    entry->data = copyString(value);
+    entry->next = theStack->head;
+    entry->type = t;
+    theStack->head = entry;
+    theStack->stackSize++;
   }
 }
 
@@ -65,6 +52,13 @@ char *top(struct m10_stack_t *theStack)
     return theStack->head->data;
   else
     return NULL;
+}
+
+void topSt(struct m10_stack_t *theStack,m10_stack_t *d)
+{
+  if (theStack && theStack->head)
+    d->head->data=theStack->head->data;
+    d->head->type=theStack->head->type;
 }
 
 void pop(struct m10_stack_t *theStack)

@@ -1,6 +1,7 @@
 #include "symbol_table.h"
 #include "symbol_table.c"
 #include "queue.h"
+#include "stack.h"
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -362,6 +363,9 @@ void recorrerPolaca(FILE *pf,t_queue *p)
     char aux2[10];
 	int nroAux=0;
     t_node* nodo;
+    m10_stack_t *d;
+    m10_stack_t *stAsm= newStack();
+
     while(!is_queue_empty(p))
     {
         dequeueNode(p,nodo);
@@ -369,7 +373,8 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         //Variables y Constantes
         if(buscarId(nodo->info)!=NULL)
         {
-            fprintf(pf,"\tfild \t@%s\n",nodo->info);
+            pushSt(stAsm,nodo->info,nodo->tipo);
+            //fprintf(pf,"\tfild \t@_%s\n",nodo->info);
         }
 
         if(strcmp(nodo->info,"*")==0)
@@ -429,27 +434,32 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         //Print
         if(strcmp(nodo->info,"PRINT")==0)
         {
+            topSt(stAsm,d);
             fprintf(pf,"\tMOV AH, 09h\n");
-            fprintf(pf,"\tlea DX, @%s\n","id");
-            fprintf(pf,"\tint 21h\n");               
+            fprintf(pf,"\tlea DX, @_%s\n",d->head->data);
+            fprintf(pf,"\tint 21h\n");
+            pop(stAsm);               
         }
 
         if(strcmp(nodo->info,"READ")==0)
-        {
+        {  
+            topSt(stAsm,d);
             switch(nodo->tipo)
             {
                 case tipoFloat:
-                    fprintf(pf,"\tGetInteger \t@%s\n","id");
+                    fprintf(pf,"\tGetInteger \t@_%s\n",d->head->data);
                 break;
                 case tipoInt:
-                    fprintf(pf,"\tgetFloat \t@%s\n","id");
+                    fprintf(pf,"\tgetFloat \t@_%s\n",d->head->data);
                     break;
                 case tipoString:
-                    fprintf(pf,"\tgetString \t@%s\n","id");
+                    fprintf(pf,"\tgetString \t@_%s\n",d->head->data);
                     break;	
             }
+            pop(stAsm);
         }     
     }
+	destroyStack(&stAsm);
 }
 
 char* prepararEtiqueta(char *etiq)

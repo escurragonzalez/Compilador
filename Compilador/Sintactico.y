@@ -129,21 +129,21 @@ sentencia:	ciclo {fprintf(arch_reglas,"sentencia:	ciclo \n");}
 intout: 	PRINT  CONST_STR
 			{
 				enqueue(&qPolaca, $2);
-				enqueue(&qPolaca, "PRINT");	
+				enqueueType(&qPolaca, "PRINT",tipoConstCadena);	
 				fprintf(arch_reglas,"intout: PRINT  CONST_STR\n");
 			}
 	    	| READ  ID  
 			{ 
 				verificarExisteId($2,yylineno);
-				enqueue(&qPolaca, $2);
-				enqueue(&qPolaca, "READ");	
+				enqueueType(&qPolaca, $2,obtenerTipoDatoId($2));
+				enqueueType(&qPolaca, "READ",obtenerTipoDatoId($2));	
 				fprintf(arch_reglas,"intout: READ  ID \n");
 			}
 			| PRINT  ID
 			{
 				verificarExisteId($2,yylineno);
-				enqueue(&qPolaca, $2);
-				enqueue(&qPolaca, "PRINT");	
+				enqueueType(&qPolaca, $2,obtenerTipoDatoId($2));
+				enqueueType(&qPolaca, "PRINT",obtenerTipoDatoId($2));	
 				fprintf(arch_reglas,"intout: PRINT  ID \n");
 			}
 		

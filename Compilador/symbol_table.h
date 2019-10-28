@@ -1,5 +1,6 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
+#include "tipodato.h"
 
 /* Data type for links in the chain of symbols.  */
 struct symrec
@@ -17,18 +18,7 @@ typedef struct symrec symrec;
 /* The symbol table: a chain of 'struct symrec'.  */
 extern symrec *sym_table;
 
-enum tipoDato
-{
-    tipoConstEntero,
-    tipoConstReal,
-    tipoConstCadena,
-    sinTipo,
-    tipoInt,
-    tipoFloat,
-    tipoString
-};
 
-typedef enum tipoDato _tipoDato; 
 
 symrec *putsym(char const *, int);
 symrec *getsym(char *);
