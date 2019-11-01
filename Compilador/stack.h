@@ -15,6 +15,8 @@ struct m10_stack_t
 };
 
 typedef struct m10_stack_t m10_stack_t;
+typedef struct m10_stack_entry m10_stack_entry;
+
 extern m10_stack_t *st;
 extern m10_stack_t *stIdType;
 
@@ -25,7 +27,7 @@ char *top(struct m10_stack_t *);
 void pop(struct m10_stack_t *);
 void clear (struct m10_stack_t *);
 void destroyStack(struct m10_stack_t **);
-void topSt(struct m10_stack_t *,m10_stack_t *);
+void topSt(struct m10_stack_t *,m10_stack_entry *);
 void pushSt(struct m10_stack_t *, char *,_tipoDato );
 
 #endif
