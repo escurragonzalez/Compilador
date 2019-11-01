@@ -126,7 +126,7 @@ sentencia:	ciclo {fprintf(arch_reglas,"sentencia:	ciclo \n");}
 			| asignacion {fprintf(arch_reglas,"sentencia:	asignacion\n");}
 			| intout {fprintf(arch_reglas,"sentencia:	intout\n");}							
 
-intout: 	PRINT  CONST_STR
+intout: 	PRINT CONST_STR
 			{
 				enqueue(&qPolaca, $2);
 				enqueueType(&qPolaca, "PRINT",tipoConstCadena);	
@@ -301,7 +301,7 @@ f_inlist: INLIST P_A ID
 				asignarTipo(aux_str,"float",yylineno);
 				enqueue(&qPolaca,aux_str);
 				auxOperaciones++;
-				enqueue(&qPolaca,"=");
+				enqueue(&qPolaca,":=");
 			} 
 			PUNTO_Y_COMA C_A lista_expresion C_C P_C
 			{
@@ -346,7 +346,7 @@ lista_expresion:  expresion
 				{
 					dequeue(&qVariablesAsig,aux_str);
 					enqueue(&qPolaca,aux_str);
-					enqueue(&qPolaca,"=");
+					enqueue(&qPolaca,":=");
 				}
 				fprintf(arch_reglas,"lista_expresion:  lista_expresion , expresion\n");
 			}

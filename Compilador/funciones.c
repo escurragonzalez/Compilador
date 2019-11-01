@@ -363,13 +363,13 @@ void recorrerPolaca(FILE *pf,t_queue *p)
     char aux2[10];
 	int nroAux=0;
     t_node* nodo;
-    m10_stack_t *d;
+    m10_stack_entry *d = malloc(sizeof(* d));
     m10_stack_t *stAsm= newStack();
 
     while(!is_queue_empty(p))
     {
         dequeueNode(p,nodo);
-
+        printf("\n:%s\n",nodo->info);
         //Variables y Constantes
         if(buscarId(nodo->info)!=NULL)
         {
@@ -379,10 +379,10 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         if(strcmp(nodo->info,"*")==0)
         {
             topSt(stAsm,d);
-        	fprintf(pf,"\tfld \t@%s\n",normalizar(d->head->data));
+        	fprintf(pf,"\tfld \t@%s\n",normalizar(d->data));
             pop(stAsm);
 			topSt(stAsm,d);
-        	fprintf(pf,"\tfld \t@%s\n",normalizar(d->head->data));
+        	fprintf(pf,"\tfld \t@%s\n",normalizar(d->data));
             pop(stAsm);
             fprintf(pf,"\tfmul\n");
             strcpy(aux1,"_auxR");
@@ -398,31 +398,34 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         if(strcmp(nodo->info,":=")==0)
         {
             topSt(stAsm,d);
-            switch(d->head->type)
+            printf("dato: %s",d->data);
+            printf("tipo: %d",d->type);
+
+            switch(d->type)
             {
                 case tipoInt:
                 case tipoConstEntero:
-                    fprintf(pf,"\tfild \t@_%s\n",d->head->data);
+                    fprintf(pf,"\tfild \t@_%s\n",d->data);
                     pop(stAsm);
                     topSt(stAsm,d);
-                    fprintf(pf,"\tfistp \t@_%s\n",d->head->data);
+                    fprintf(pf,"\tfistp \t@_%s\n",d->data);
                     pop(stAsm);
                 break;
                 case tipoFloat:
                 case tipoConstReal:
-                    fprintf(pf,"\tfld \t@%s\n",normalizar(d->head->data));
+                    fprintf(pf,"\tfld \t@%s\n",normalizar(d->data));
                     pop(stAsm);
                     topSt(stAsm,d);
-                    fprintf(pf,"\tfstp \t@%s\n",normalizar(d->head->data));
+                    fprintf(pf,"\tfstp \t@%s\n",normalizar(d->data));
                     pop(stAsm);
                 break;
                 case tipoConstCadena:
                 case tipoString:
                     fprintf(pf,"\tmov ax, @DATA\n\tmov ds, ax\n\tmov es, ax\n");
-                    fprintf(pf,"\tmov si, OFFSET\t@%s\n", d->head->data);
+                    fprintf(pf,"\tmov si, OFFSET\t@%s\n", d->data);
                     pop(stAsm);
                     topSt(stAsm,d);
-                    fprintf(pf,"\tmov di, OFFSET\t@%s\n",d->head->data);
+                    fprintf(pf,"\tmov di, OFFSET\t@%s\n",d->data);
                     fprintf(pf,"\tcall copiar\n");
                     pop(stAsm);
                 break;
@@ -476,7 +479,7 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         {
             topSt(stAsm,d);
             fprintf(pf,"\tMOV AH, 09h\n");
-            fprintf(pf,"\tlea DX, @_%s\n",d->head->data);
+            fprintf(pf,"\tlea DX, @_%s\n",d->data);
             fprintf(pf,"\tint 21h\n");
             pop(stAsm);               
         }
@@ -487,13 +490,13 @@ void recorrerPolaca(FILE *pf,t_queue *p)
             switch(nodo->tipo)
             {
                 case tipoFloat:
-                    fprintf(pf,"\tGetInteger \t@_%s\n",d->head->data);
+                    fprintf(pf,"\tGetInteger \t@_%s\n",d->data);
                 break;
                 case tipoInt:
-                    fprintf(pf,"\tgetFloat \t@_%s\n",d->head->data);
+                    fprintf(pf,"\tgetFloat \t@_%s\n",d->data);
                     break;
                 case tipoString:
-                    fprintf(pf,"\tgetString \t@_%s\n",d->head->data);
+                    fprintf(pf,"\tgetString \t@_%s\n",d->data);
                     break;	
             }
             pop(stAsm);

@@ -54,11 +54,15 @@ char *top(struct m10_stack_t *theStack)
     return NULL;
 }
 
-void topSt(struct m10_stack_t *theStack,m10_stack_t *d)
+void topSt(struct m10_stack_t *theStack,m10_stack_entry *d)
 {
   if (theStack && theStack->head)
-    d->head->data=theStack->head->data;
-    d->head->type=theStack->head->type;
+  {
+    d->data=theStack->head->data;
+    printf("\ntopSt  d-> dead %s",d->data);
+    printf("\ntopSt  d-> t %s",d->type);
+    d->type=theStack->head->type;
+  }
 }
 
 void pop(struct m10_stack_t *theStack)
