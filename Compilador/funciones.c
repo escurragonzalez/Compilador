@@ -303,6 +303,13 @@ int verificarCompatible(int a,int b)
 	return 0;
 }
 
+char * tratarConstanteCadena(char * s)
+{
+    s=reemplazarCaracter(normalizarSinComillas(s));
+	memmove(s,s+1,strlen(s));
+    return s;
+}
+
 void generarASM(t_queue *p,int auxOperaciones)
 {
     t_queue* aux=p;
@@ -365,11 +372,10 @@ void recorrerPolaca(FILE *pf,t_queue *p)
     t_node* nodo;
     m10_stack_entry *d;
     m10_stack_t *stAsm= newStack();
-
     while(!is_queue_empty(p))
     {
         dequeueNode(p,nodo);
-
+        printf("\n-- %s ",nodo->info);
         //Variables y Constantes
         if(buscarId(nodo->info)!=NULL)
         {
@@ -377,14 +383,10 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         }
         if(nodo->tipo==tipoConstCadena)
         {   
-            //TODO Corregir el problema con tipoConstCadena hay que poner en la pila  
-            nodo->info=reemplazarCaracter(normalizarSinComillas(nodo->info));
-            printf("\n nodo tipoconststr %s",nodo->info);
-            
+            nodo->info=tratarConstanteCadena(nodo->info);
             if(buscarId(nodo->info)!=NULL)
             {
                 pushSt(stAsm,nodo->info,nodo->tipo);
-                printf("\n _ %s",nodo->info);
             }
         }
 
@@ -482,7 +484,7 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         {
             fprintf(pf,"%s\n",prepararEtiqueta(nodo->info));
         }   
-//----------------------------------
+
         //Print
         if(strcmp(nodo->info,"PRINT")==0)
         {

@@ -129,7 +129,7 @@ sentencia:	ciclo {fprintf(arch_reglas,"sentencia:	ciclo \n");}
 intout: 	PRINT CONST_STR
 			{
 				enqueueType(&qPolaca, $2,tipoConstCadena);
-				enqueueType(&qPolaca, "PRINT",tipoConstCadena);	
+				enqueue(&qPolaca, "PRINT");	
 				fprintf(arch_reglas,"intout: PRINT  CONST_STR\n");
 			}
 	    	| READ  ID  
