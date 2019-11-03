@@ -128,7 +128,7 @@ sentencia:	ciclo {fprintf(arch_reglas,"sentencia:	ciclo \n");}
 
 intout: 	PRINT CONST_STR
 			{
-				enqueue(&qPolaca, $2);
+				enqueueType(&qPolaca, $2,tipoConstCadena);
 				enqueueType(&qPolaca, "PRINT",tipoConstCadena);	
 				fprintf(arch_reglas,"intout: PRINT  CONST_STR\n");
 			}

@@ -363,17 +363,29 @@ void recorrerPolaca(FILE *pf,t_queue *p)
     char aux2[10];
 	int nroAux=0;
     t_node* nodo;
-    m10_stack_entry *d = malloc(sizeof(* d));
+    m10_stack_entry *d;
     m10_stack_t *stAsm= newStack();
 
     while(!is_queue_empty(p))
     {
         dequeueNode(p,nodo);
-        printf("\n:%s\n",nodo->info);
+
         //Variables y Constantes
         if(buscarId(nodo->info)!=NULL)
         {
             pushSt(stAsm,nodo->info,nodo->tipo);
+        }
+        if(nodo->tipo==tipoConstCadena)
+        {   
+            //TODO Corregir el problema con tipoConstCadena hay que poner en la pila  
+            nodo->info=reemplazarCaracter(normalizarSinComillas(nodo->info));
+            printf("\n nodo tipoconststr %s",nodo->info);
+            
+            if(buscarId(nodo->info)!=NULL)
+            {
+                pushSt(stAsm,nodo->info,nodo->tipo);
+                printf("\n _ %s",nodo->info);
+            }
         }
 
         if(strcmp(nodo->info,"*")==0)
@@ -398,9 +410,6 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         if(strcmp(nodo->info,":=")==0)
         {
             topSt(stAsm,d);
-            printf("dato: %s",d->data);
-            printf("tipo: %d",d->type);
-
             switch(d->type)
             {
                 case tipoInt:
