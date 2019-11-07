@@ -58,7 +58,7 @@ void topSt(struct m10_stack_t *theStack,m10_stack_entry *d)
 {
   if (theStack && theStack->head)
   {
-    d->data=copyString(theStack->head->data);
+    d->data=theStack->head->data;
     d->type=theStack->head->type;
   }
 }

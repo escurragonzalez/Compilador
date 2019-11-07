@@ -375,7 +375,7 @@ void recorrerPolaca(FILE *pf,t_queue *p)
     while(!is_queue_empty(p))
     {
         dequeueNode(p,nodo);
-        printf("\n-- %s ",nodo->info);
+        
         //Variables y Constantes
         if(buscarId(nodo->info)!=NULL)
         {
@@ -397,7 +397,6 @@ void recorrerPolaca(FILE *pf,t_queue *p)
             pop(stAsm);
 			topSt(stAsm,d);
         	fprintf(pf,"\tfld \t@%s\n",normalizar(d->data));
-            pop(stAsm);
             fprintf(pf,"\tfmul\n");
             strcpy(aux1,"_auxR");
             itoa(nroAux,aux2,10);
@@ -420,7 +419,6 @@ void recorrerPolaca(FILE *pf,t_queue *p)
                     pop(stAsm);
                     topSt(stAsm,d);
                     fprintf(pf,"\tfistp \t@_%s\n",d->data);
-                    pop(stAsm);
                 break;
                 case tipoFloat:
                 case tipoConstReal:
@@ -428,7 +426,6 @@ void recorrerPolaca(FILE *pf,t_queue *p)
                     pop(stAsm);
                     topSt(stAsm,d);
                     fprintf(pf,"\tfstp \t@%s\n",normalizar(d->data));
-                    pop(stAsm);
                 break;
                 case tipoConstCadena:
                 case tipoString:
@@ -438,7 +435,6 @@ void recorrerPolaca(FILE *pf,t_queue *p)
                     topSt(stAsm,d);
                     fprintf(pf,"\tmov di, OFFSET\t@%s\n",d->data);
                     fprintf(pf,"\tcall copiar\n");
-                    pop(stAsm);
                 break;
             }
         }
@@ -491,8 +487,7 @@ void recorrerPolaca(FILE *pf,t_queue *p)
             topSt(stAsm,d);
             fprintf(pf,"\tMOV AH, 09h\n");
             fprintf(pf,"\tlea DX, @_%s\n",d->data);
-            fprintf(pf,"\tint 21h\n");
-            pop(stAsm);               
+            fprintf(pf,"\tint 21h\n");     
         }
 
         if(strcmp(nodo->info,"READ")==0)
@@ -510,8 +505,8 @@ void recorrerPolaca(FILE *pf,t_queue *p)
                     fprintf(pf,"\tgetString \t@_%s\n",d->data);
                     break;	
             }
-            pop(stAsm);
-        }     
+        }
+        pop(stAsm);
     }
 	destroyStack(&stAsm);
 }
