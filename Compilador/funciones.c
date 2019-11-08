@@ -344,6 +344,7 @@ void generarASM(t_queue *p,int auxOperaciones)
                 fprintf(pf,"\tDD %s\n",ptr->valor);
                 break;
             case tipoConstCadena:
+	            memmove(ptr->valor,ptr->valor+1,strlen(ptr->valor));
                 fprintf(pf,"\tDB \"%s\",'$',%d dup(?)\n",ptr->valor,50-ptr->len);
                 break;   
         }
@@ -356,9 +357,9 @@ void generarASM(t_queue *p,int auxOperaciones)
 		fprintf(pf,"\t@_auxE%d \tDD 0\n",i);
 	}
 
+    fprintf(pf,"\n.CODE\n.startup\n\tmov AX,@DATA\n\tmov DS,AX\n\n\tFINIT\n\n");
     recorrerPolaca(pf,aux);
 
-    fprintf(pf,"\n.CODE\n.startup\n\tmov AX,@DATA\n\tmov DS,AX\n\n\tFINIT\n\n");
     fprintf(pf,"\tmov ah, 4ch\n\tint 21h\n");
     fprintf(pf,"\nend");
     fclose(pf);
@@ -393,10 +394,10 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         if(strcmp(nodo->info,"*")==0)
         {
             topSt(stAsm,d);
-        	fprintf(pf,"\tfld \t@%s\n",normalizar(d->data));
+         	fprintf(pf,"\tfld \t@%s\n",d->data);
             pop(stAsm);
 			topSt(stAsm,d);
-        	fprintf(pf,"\tfld \t@%s\n",normalizar(d->data));
+          	fprintf(pf,"\tfld \t@%s\n",d->data);
             fprintf(pf,"\tfmul\n");
             strcpy(aux1,"_auxR");
             itoa(nroAux,aux2,10);
