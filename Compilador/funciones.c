@@ -37,6 +37,8 @@ enum tipoDato obtenerTipo(char *);
 FILE * recorrerPolaca(FILE *,t_queue *);
 char * prepararEtiqueta(char *);
 symrec *buscarId(char *);
+char * obtenerOperacion(char * ,_tipoDato);
+
 
 void mensajeDeError(enum error error,const char* info, int linea)
 {
@@ -370,17 +372,21 @@ void generarASM(t_queue *p,int auxOperaciones)
 FILE * recorrerPolaca(FILE *pfile,t_queue *p)
 {
     FILE * f=pfile;
+    t_queue *q=p;
     char aux1[50]="aux\0";
     char aux2[10];
-	int nroAux=0;
-    t_node* nodo;
-    m10_stack_entry *d;
+    char * oper;
+	int nroAuxE=0;
+	int nroAuxR=0;
+    t_node* nodo = malloc(sizeof(nodo));
+    m10_stack_entry *d= malloc(sizeof(d));
     char * token;
     int td;
     m10_stack_t *stAsm= newStack();
-    while(!is_queue_empty(p))
+    
+    while(!is_queue_empty(q))
     {
-        dequeueNode(p,nodo);
+        dequeueNode(q,nodo);
 
         //Variables y Constantes
         if(buscarId(nodo->info)!=NULL)
@@ -396,43 +402,43 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
             }
         }
 
-        if(strcmp(nodo->info,"*")==0)
+        if(strcmp(nodo->info,"*")==0 || strcmp(nodo->info,"+")==0 || strcmp(nodo->info,"/")==0 || strcmp(nodo->info,"-")==0 )
         {
+            oper = copyString(nodo->info);
             topSt(stAsm,d);
             td=d->type;
             token = malloc(strlen(d->data)+1);
             token = copyString(d->data);
             pop(stAsm);
             topSt(stAsm,d);
-                    
             switch(d->type)
             {
                 case tipoInt:
                 case tipoConstEntero:
                     fprintf(f,"\tfild \t@%s\n",normalizar(d->data));
-                    fprintf(f,"\tfimul \t@%s\n",normalizar(token));
+                    fprintf(f,"\t%s \t@%s\n",obtenerOperacion(oper,tipoInt),normalizar(token));
                     pop(stAsm);
                     strcpy(aux1,"auxE");
-                    itoa(nroAux,aux2,10);
+                    itoa(nroAuxE,aux2,10);
                     strcat(aux1,aux2);
                     fprintf(f,"\tfistp \t@_%s\n", aux1);
                     strcpy(nodo->info,aux1);
                     pushSt(stAsm,nodo->info,tipoInt);
-                    nroAux++;
+                    nroAuxE++;
                 break;
                 case tipoFloat:
                 case tipoConstReal:
                     fprintf(f,"\tfld \t@%s\n",normalizar(d->data));
                     fprintf(f,"\tfld \t@%s\n",normalizar(token));
                     pop(stAsm);
-                    fprintf(f,"\tfmul\n");
+                    fprintf(f,"\t%s\n",obtenerOperacion(oper,tipoFloat));
                     strcpy(aux1,"auxR");
-                    itoa(nroAux,aux2,10);
+                    itoa(nroAuxR,aux2,10);
                     strcat(aux1,aux2);
                     fprintf(f,"\tfstp \t@_%s\n", aux1);
                     strcpy(nodo->info,aux1);
                     pushSt(stAsm,nodo->info,tipoFloat);
-                    nroAux++;
+                    nroAuxR++;
                 break;
             }
             free(token);
@@ -571,6 +577,8 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
         }
     }
 	destroyStack(&stAsm);
+    free(nodo);
+    free(d);
     return f;
 }
 
@@ -596,5 +604,41 @@ void validarTipoDato(_tipoDato td1, _tipoDato td2, int linea) {
     if(td1==tipoString && td2!=tipoConstCadena && td2!=sinTipo)
     {
         mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos String",linea);
+    }
+}
+
+char * obtenerOperacion(char * op,_tipoDato  tipo)
+{
+    switch(tipo)
+    {
+        case tipoInt:
+        case tipoConstEntero:
+            if(strcmp(op,"*")==0)
+                return "fimul";
+                
+            if(strcmp(op,"+")==0)
+                return "fiadd";
+                
+            if(strcmp(op,"/")==0)
+                return "fidivr";
+                
+            if(strcmp(op,"-")==0)
+                return "fisubr";
+        break;
+        case tipoFloat:
+        case tipoConstReal:
+            if(strcmp(op,"*")==0)
+                return "fmul";
+                
+            if(strcmp(op,"+")==0)
+                return "fadd";
+                
+            if(strcmp(op,"/")==0)
+                return "fdivr";
+                
+            if(strcmp(op,"-")==0)
+                return "fsubr";
+
+        break;
     }
 }
