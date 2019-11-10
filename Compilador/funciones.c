@@ -34,7 +34,7 @@ const char* getDataTypeName(enum tipoDato tipo);
 void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *,int );
 void verificarExisteId(char *,int);
 enum tipoDato obtenerTipo(char *);
-void recorrerPolaca(FILE *,t_queue *);
+FILE * recorrerPolaca(FILE *,t_queue *);
 char * prepararEtiqueta(char *);
 symrec *buscarId(char *);
 
@@ -312,7 +312,7 @@ char * tratarConstanteCadena(char * s)
 
 void generarASM(t_queue *p,int auxOperaciones)
 {
-    t_queue* aux=p;
+    t_queue* aux_q=p;
     int i;
     char aux1[50]="aux\0";
     
@@ -358,15 +358,16 @@ void generarASM(t_queue *p,int auxOperaciones)
 	}
 
     fprintf(pf,"\n.CODE\n.startup\n\tmov AX,@DATA\n\tmov DS,AX\n\n\tFINIT\n\n");
-    recorrerPolaca(pf,aux);
+    pf=recorrerPolaca(pf,aux_q);
 
     fprintf(pf,"\tmov ah, 4ch\n\tint 21h\n");
     fprintf(pf,"\nend");
     fclose(pf);
 }
 
-void recorrerPolaca(FILE *pf,t_queue *p)
+FILE * recorrerPolaca(FILE *pfile,t_queue *p)
 {
+    FILE * f=pfile;
     char aux1[50]="aux\0";
     char aux2[10];
 	int nroAux=0;
@@ -376,7 +377,7 @@ void recorrerPolaca(FILE *pf,t_queue *p)
     while(!is_queue_empty(p))
     {
         dequeueNode(p,nodo);
-        
+        printf("\n queue %s",nodo->info);
         //Variables y Constantes
         if(buscarId(nodo->info)!=NULL)
         {
@@ -394,15 +395,16 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         if(strcmp(nodo->info,"*")==0)
         {
             topSt(stAsm,d);
-         	fprintf(pf,"\tfld \t@%s\n",d->data);
+         	fprintf(f,"\tfld \t@%s\n",d->data);
             pop(stAsm);
 			topSt(stAsm,d);
-          	fprintf(pf,"\tfld \t@%s\n",d->data);
-            fprintf(pf,"\tfmul\n");
+          	fprintf(f,"\tfld \t@%s\n",d->data);
+            pop(stAsm);
+            fprintf(f,"\tfmul\n");
             strcpy(aux1,"_auxR");
             itoa(nroAux,aux2,10);
             strcat(aux1,aux2);
-            fprintf(pf,"\tfstp \t@%s\n", aux1);
+            fprintf(f,"\tfstp \t@%s\n", aux1);
             strcpy(nodo->info,aux1);
             pushSt(stAsm,nodo->info,tipoFloat);
             nroAux++;
@@ -416,26 +418,29 @@ void recorrerPolaca(FILE *pf,t_queue *p)
             {
                 case tipoInt:
                 case tipoConstEntero:
-                    fprintf(pf,"\tfild \t@_%s\n",d->data);
+                    fprintf(f,"\tfild \t@_%s\n",d->data);
                     pop(stAsm);
                     topSt(stAsm,d);
-                    fprintf(pf,"\tfistp \t@_%s\n",d->data);
+                    fprintf(f,"\tfistp \t@_%s\n",d->data);
+                    pop(stAsm);
                 break;
                 case tipoFloat:
                 case tipoConstReal:
-                    fprintf(pf,"\tfld \t@%s\n",normalizar(d->data));
+                    fprintf(f,"\tfld \t@%s\n",normalizar(d->data));
                     pop(stAsm);
                     topSt(stAsm,d);
-                    fprintf(pf,"\tfstp \t@%s\n",normalizar(d->data));
+                    fprintf(f,"\tfstp \t@%s\n",normalizar(d->data));
+                    pop(stAsm);
                 break;
                 case tipoConstCadena:
                 case tipoString:
-                    fprintf(pf,"\tmov ax, @DATA\n\tmov ds, ax\n\tmov es, ax\n");
-                    fprintf(pf,"\tmov si, OFFSET\t@%s\n", d->data);
+                    fprintf(f,"\tmov ax, @DATA\n\tmov ds, ax\n\tmov es, ax\n");
+                    fprintf(f,"\tmov si, OFFSET\t@%s\n", d->data);
                     pop(stAsm);
                     topSt(stAsm,d);
-                    fprintf(pf,"\tmov di, OFFSET\t@%s\n",d->data);
-                    fprintf(pf,"\tcall copiar\n");
+                    fprintf(f,"\tmov di, OFFSET\t@%s\n",d->data);
+                    fprintf(f,"\tcall copiar\n");
+                    pop(stAsm);
                 break;
             }
         }
@@ -443,52 +448,53 @@ void recorrerPolaca(FILE *pf,t_queue *p)
         // >
         if(strcmp(nodo->info,"BLE")==0)
         {
-            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjbe\t\t");
+            fprintf(f,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjbe\t\t");
         }
 
         //<
         if(strcmp(nodo->info,"BGE")==0)
         {
-            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjae\t\t");
+            fprintf(f,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjae\t\t");
         }
 
         //!=
         if(strcmp(nodo->info,"BEQ")==0)
         {
-            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tje\t\t");
+            fprintf(f,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tje\t\t");
         }
 
         //==
         if(strcmp(nodo->info,"BNE")==0)
         {
-            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjne\t\t");
+            fprintf(f,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjne\t\t");
         }
 
         //>=
         if(strcmp(nodo->info,"BLT")==0)
         {
-            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjb\t\t");
+            fprintf(f,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjb\t\t");
         }
 
         //<=
         if(strcmp(nodo->info,"BGT")==0)
         {
-            fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tja\t\t");
+            fprintf(f,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tja\t\t");
         }
 
         //ETIQUETAS
         if(strchr(nodo->info, '#')!=NULL)
         {
-            fprintf(pf,"%s\n",prepararEtiqueta(nodo->info));
+            fprintf(f,"%s\n",prepararEtiqueta(nodo->info));
         }   
 
         //Print
         if(strcmp(nodo->info,"PRINT")==0)
         {
             topSt(stAsm,d);
-            fprintf(pf,"\tMOV AH, 09h\n");
-            fprintf(pf,"\tlea DX, @_%s\n",d->data);
-            fprintf(pf,"\tint 21h\n");     
+            fprintf(f,"\tMOV AH, 09h\n");
+            fprintf(f,"\tlea DX, @_%s\n",d->data);
+            fprintf(f,"\tint 21h\n");
+            pop(stAsm);
         }
 
         if(strcmp(nodo->info,"READ")==0)
@@ -497,19 +503,20 @@ void recorrerPolaca(FILE *pf,t_queue *p)
             switch(nodo->tipo)
             {
                 case tipoFloat:
-                    fprintf(pf,"\tGetInteger \t@_%s\n",d->data);
+                    fprintf(f,"\tGetInteger \t@_%s\n",d->data);
                 break;
                 case tipoInt:
-                    fprintf(pf,"\tgetFloat \t@_%s\n",d->data);
+                    fprintf(f,"\tgetFloat \t@_%s\n",d->data);
                     break;
                 case tipoString:
-                    fprintf(pf,"\tgetString \t@_%s\n",d->data);
+                    fprintf(f,"\tgetString \t@_%s\n",d->data);
                     break;	
             }
+            pop(stAsm);
         }
-        pop(stAsm);
     }
 	destroyStack(&stAsm);
+    return f;
 }
 
 char* prepararEtiqueta(char *etiq)
