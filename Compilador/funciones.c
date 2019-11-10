@@ -340,8 +340,10 @@ void generarASM(t_queue *p,int auxOperaciones)
                 fprintf(pf,"\tDB MAXTEXTSIZE dup (?),'$'\n");
                 break;
             case tipoConstEntero:
+                fprintf(pf,"\tDW %d\n",atoi(ptr->valor));
+                break;
             case tipoConstReal:
-                fprintf(pf,"\tDD %s\n",ptr->valor);
+			    fprintf(pf,"\tDD %s\n",ptr->valor);
                 break;
             case tipoConstCadena:
 	            memmove(ptr->valor,ptr->valor+1,strlen(ptr->valor));
@@ -354,13 +356,13 @@ void generarASM(t_queue *p,int auxOperaciones)
     for(i=0;i<auxOperaciones;i++)
 	{
 		fprintf(pf,"\t@_auxR%d \tDD 0.0\n",i);
-		fprintf(pf,"\t@_auxE%d \tDD 0\n",i);
+		fprintf(pf,"\t@_auxE%d \tDW 0\n",i);
 	}
 
     fprintf(pf,"\n.CODE\n.startup\n\tmov AX,@DATA\n\tmov DS,AX\n\n\tFINIT\n\n");
     pf=recorrerPolaca(pf,aux_q);
 
-    fprintf(pf,"\tmov ah, 4ch\n\tint 21h\n");
+    fprintf(pf,"\n\tmov ah, 4ch\n\tint 21h\n");
     fprintf(pf,"\nend");
     fclose(pf);
 }
@@ -373,11 +375,13 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
 	int nroAux=0;
     t_node* nodo;
     m10_stack_entry *d;
+    char * token;
+    int td;
     m10_stack_t *stAsm= newStack();
     while(!is_queue_empty(p))
     {
         dequeueNode(p,nodo);
-        printf("\n queue %s",nodo->info);
+
         //Variables y Constantes
         if(buscarId(nodo->info)!=NULL)
         {
@@ -395,52 +399,103 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
         if(strcmp(nodo->info,"*")==0)
         {
             topSt(stAsm,d);
-         	fprintf(f,"\tfld \t@%s\n",d->data);
+            td=d->type;
+            token = malloc(strlen(d->data)+1);
+            token = copyString(d->data);
             pop(stAsm);
-			topSt(stAsm,d);
-          	fprintf(f,"\tfld \t@%s\n",d->data);
-            pop(stAsm);
-            fprintf(f,"\tfmul\n");
-            strcpy(aux1,"_auxR");
-            itoa(nroAux,aux2,10);
-            strcat(aux1,aux2);
-            fprintf(f,"\tfstp \t@%s\n", aux1);
-            strcpy(nodo->info,aux1);
-            pushSt(stAsm,nodo->info,tipoFloat);
-            nroAux++;
+            topSt(stAsm,d);
+                    
+            switch(d->type)
+            {
+                case tipoInt:
+                case tipoConstEntero:
+                    fprintf(f,"\tfild \t@%s\n",normalizar(d->data));
+                    fprintf(f,"\tfimul \t@%s\n",normalizar(token));
+                    pop(stAsm);
+                    strcpy(aux1,"auxE");
+                    itoa(nroAux,aux2,10);
+                    strcat(aux1,aux2);
+                    fprintf(f,"\tfistp \t@_%s\n", aux1);
+                    strcpy(nodo->info,aux1);
+                    pushSt(stAsm,nodo->info,tipoInt);
+                    nroAux++;
+                break;
+                case tipoFloat:
+                case tipoConstReal:
+                    fprintf(f,"\tfld \t@%s\n",normalizar(d->data));
+                    fprintf(f,"\tfld \t@%s\n",normalizar(token));
+                    pop(stAsm);
+                    fprintf(f,"\tfmul\n");
+                    strcpy(aux1,"auxR");
+                    itoa(nroAux,aux2,10);
+                    strcat(aux1,aux2);
+                    fprintf(f,"\tfstp \t@_%s\n", aux1);
+                    strcpy(nodo->info,aux1);
+                    pushSt(stAsm,nodo->info,tipoFloat);
+                    nroAux++;
+                break;
+            }
+            free(token);
         }
 
         //Asignacion 
         if(strcmp(nodo->info,":=")==0)
         {
             topSt(stAsm,d);
+            td=d->type;
+            token = malloc(strlen(d->data)+1);
+            token = copyString(d->data);
+            pop(stAsm);
+            topSt(stAsm,d);
+                    
             switch(d->type)
             {
                 case tipoInt:
                 case tipoConstEntero:
                     fprintf(f,"\tfild \t@_%s\n",d->data);
-                    pop(stAsm);
-                    topSt(stAsm,d);
-                    fprintf(f,"\tfistp \t@_%s\n",d->data);
+                    fprintf(f,"\tfistp \t@_%s\n",token);
                     pop(stAsm);
                 break;
                 case tipoFloat:
                 case tipoConstReal:
                     fprintf(f,"\tfld \t@%s\n",normalizar(d->data));
-                    pop(stAsm);
-                    topSt(stAsm,d);
-                    fprintf(f,"\tfstp \t@%s\n",normalizar(d->data));
+                    fprintf(f,"\tfstp \t@%s\n",normalizar(token));
                     pop(stAsm);
                 break;
                 case tipoConstCadena:
                 case tipoString:
                     fprintf(f,"\tmov ax, @DATA\n\tmov ds, ax\n\tmov es, ax\n");
                     fprintf(f,"\tmov si, OFFSET\t@%s\n", d->data);
-                    pop(stAsm);
-                    topSt(stAsm,d);
-                    fprintf(f,"\tmov di, OFFSET\t@%s\n",d->data);
+                    fprintf(f,"\tmov di, OFFSET\t@%s\n",token);
                     fprintf(f,"\tcall copiar\n");
                     pop(stAsm);
+                break;
+            }
+            free(token);
+        }
+
+        if(strcmp(nodo,"CMP")==0)
+        {
+            topSt(stAsm,d);
+            td=d->type;
+            token = malloc(strlen(d->data)+1);
+            token = copyString(d->data);
+            pop(stAsm);
+            topSt(stAsm,d);
+            
+            switch(d->type)
+            {
+                case tipoInt:
+                case tipoConstEntero:
+                    fprintf(f,"\tfild \t@%s\n",token);
+                    pop(stAsm);
+                    fprintf(f,"\tfild \t@%s\n",d->data);
+                break;
+                case tipoFloat:
+                case tipoConstReal:
+                    fprintf(f,"\tfld \t@%s\n",token);
+                    pop(stAsm);
+                    fprintf(f,"\tfild \t@%s\n",d->data);
                 break;
             }
         }
@@ -491,7 +546,7 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
         if(strcmp(nodo->info,"PRINT")==0)
         {
             topSt(stAsm,d);
-            fprintf(f,"\tMOV AH, 09h\n");
+            fprintf(f,"\n\tMOV AH, 09h\n");
             fprintf(f,"\tlea DX, @_%s\n",d->data);
             fprintf(f,"\tint 21h\n");
             pop(stAsm);
