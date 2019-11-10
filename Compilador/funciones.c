@@ -474,7 +474,7 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
             free(token);
         }
 
-        if(strcmp(nodo,"CMP")==0)
+        if(strcmp(nodo->info,"CMP")==0)
         {
             topSt(stAsm,d);
             td=d->type;
@@ -579,4 +579,22 @@ char* prepararEtiqueta(char *etiq)
     //Remueve el primer caracter
     memmove(&etiq[0], &etiq[1], strlen(etiq));
     return etiq;
+}
+
+void validarTipoDato(_tipoDato td1, _tipoDato td2, int linea) {
+
+    if(td1==tipoInt && td2!=tipoConstEntero && td2!=sinTipo)
+    {
+        mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos Entero",linea);
+    }
+
+    if(td1==tipoFloat && td2!=tipoConstReal && td2!=sinTipo)
+    {
+        mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos Real",linea);
+    }
+
+    if(td1==tipoString && td2!=tipoConstCadena && td2!=sinTipo)
+    {
+        mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos String",linea);
+    }
 }

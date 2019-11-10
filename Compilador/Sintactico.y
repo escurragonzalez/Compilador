@@ -23,6 +23,9 @@ int esAsig=0;
 int contCondicion=0;		//contador por polaca 
 char auxEtiquetas[10];
 int auxOperaciones=0;
+_tipoDato tipoDatoVar;
+_tipoDato tipoDatoCompA;
+_tipoDato tipoDatoCompB;
 
 //yydebug = 1; //tener cuidado con el flag no funciona mas adelante sacarlo
 
@@ -173,7 +176,11 @@ ciclo:	REPEAT
 asignacion: 	ID OP_ASIG expresion 
 				{
 					verificarExisteId($1,yylineno);
-					enqueueType(&qPolaca, $1,obtenerTipoDatoId($1));
+					tipoDatoVar = obtenerTipoDatoId($1);
+
+					validarTipoDato(tipoDatoVar,lastTypeQueue(&qPolaca),yylineno);	// Valida si los tipos de datos son correctos
+
+					enqueueType(&qPolaca, $1,tipoDatoVar);	// encolar en Polaca
 					enqueue(&qPolaca, ":=");
 					fprintf(arch_reglas,"asignacion: ID = expresion \n");
 				}
@@ -241,12 +248,59 @@ condicion:	comparacion {fprintf(arch_reglas,"condicion:	comparacion \n");}
 				fprintf(arch_reglas,"condicion: OP_NOT comparacion\n");
 			}
 			
-comparacion:	expresion CMP_MAYOR expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BLE"); fprintf(arch_reglas,"comparacion: expresion > expresion\n");}
-			|	expresion CMP_MAYIG  expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BLT"); fprintf(arch_reglas,"comparacion: expresion >=  expresion\n");}
-			|	expresion CMP_DIST expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BEQ"); fprintf(arch_reglas,"comparacion: expresion != expresion\n");}
-			|	expresion CMP_IGUAL expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BNE"); fprintf(arch_reglas,"comparacion: expresion == expresion\n");}
-			|	expresion CMP_MENOR expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BGE"); fprintf(arch_reglas,"comparacion: expresion < expresion\n");}
-			|	expresion CMP_NENIG expresion	{ enqueue(&qPolaca, "CMP"); enqueue(&qPolaca,"BGT"); fprintf(arch_reglas,"comparacion: expresion <= expresion\n");}
+comparacion:	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_MAYOR 
+				expresion	
+				{
+					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
+					enqueue(&qPolaca, "CMP"); 
+					enqueue(&qPolaca,"BLE"); 
+					fprintf(arch_reglas,"comparacion: expresion > expresion\n");
+				}
+			|	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_MAYIG  
+				expresion	
+				{
+					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
+					enqueue(&qPolaca, "CMP"); 
+					enqueue(&qPolaca,"BLT"); 
+					fprintf(arch_reglas,"comparacion: expresion >=  expresion\n");
+				}
+			|	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_DIST 
+				expresion	
+				{
+					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
+					enqueue(&qPolaca, "CMP"); 
+					enqueue(&qPolaca,"BEQ"); 
+					fprintf(arch_reglas,"comparacion: expresion != expresion\n");
+				}
+			|	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_IGUAL 
+				expresion	{
+					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
+					enqueue(&qPolaca, "CMP"); 
+					enqueue(&qPolaca,"BNE"); 
+					fprintf(arch_reglas,"comparacion: expresion == expresion\n");
+				}
+			|	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_MENOR 
+				expresion	
+				{
+					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
+					enqueue(&qPolaca, "CMP"); 
+					enqueue(&qPolaca,"BGE"); 
+					fprintf(arch_reglas,"comparacion: expresion < expresion\n");
+				}
+			|	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_NENIG 
+				expresion	
+				{
+					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
+					enqueue(&qPolaca, "CMP"); 
+					enqueue(&qPolaca,"BGT"); 
+					fprintf(arch_reglas,"comparacion: expresion <= expresion\n");
+				}
             |	f_inlist {fprintf(arch_reglas,"comparacion: f_inlist\n");}
 
 expresion:		termino {fprintf(arch_reglas,"expresion: termino\n");}

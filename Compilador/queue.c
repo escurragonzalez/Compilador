@@ -143,3 +143,8 @@ void print_file_queue(t_queue *p)
 	
 	fclose(pf); 
 }
+
+//funcion para devolver tipo de dato de cola
+_tipoDato lastTypeQueue(t_queue *p) {
+	return p->last->tipo;
+}

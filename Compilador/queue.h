@@ -29,5 +29,6 @@ int is_queue_empty(t_queue *);
 void print_queue(t_queue *);
 void free_queue(t_queue *);
 void print_file_queue(t_queue *p);
+_tipoDato lastTypeQueue(t_queue *p);
 
 #endif
