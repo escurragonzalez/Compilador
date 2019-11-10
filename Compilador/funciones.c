@@ -365,6 +365,7 @@ void generarASM(t_queue *p,int auxOperaciones)
     pf=recorrerPolaca(pf,aux_q);
 
     fprintf(pf,"\n\tmov ah, 4ch\n\tint 21h\n");
+    
     fprintf(pf,"\nend");
     fclose(pf);
 }
@@ -399,6 +400,7 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
             if(buscarId(nodo->info)!=NULL)
             {
                 pushSt(stAsm,nodo->info,nodo->tipo);
+                printf("\nconst cadena %s %d",nodo->info,nodo->tipo);
             }
         }
 
@@ -552,9 +554,22 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
         if(strcmp(nodo->info,"PRINT")==0)
         {
             topSt(stAsm,d);
-            fprintf(f,"\n\tMOV AH, 09h\n");
-            fprintf(f,"\tlea DX, @_%s\n",d->data);
-            fprintf(f,"\tint 21h\n");
+            switch(nodo->tipo)
+            {
+                case tipoConstReal:
+                case tipoFloat:
+                    fprintf(f,"\tDisplayFloat \t@_%s ,2\n",d->data);
+                break;
+                case tipoConstEntero:
+                case tipoInt:
+                    fprintf(f,"\tDisplayInteger \t@_%s\n",d->data);
+                    break;
+                case tipoConstCadena:
+                case tipoString:
+                    fprintf(f,"\tdisplayString \t@_%s\n",d->data);
+                    break;	
+            }
+            fprintf(f,"\tnewLine\n");
             pop(stAsm);
         }
 
@@ -564,15 +579,17 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
             switch(nodo->tipo)
             {
                 case tipoFloat:
-                    fprintf(f,"\tGetInteger \t@_%s\n",d->data);
+                    fprintf(f,"\tGetFloat \t@_%s\n",d->data);
                 break;
                 case tipoInt:
-                    fprintf(f,"\tgetFloat \t@_%s\n",d->data);
+                    fprintf(f,"\tGetInteger \t@_%s\n",d->data);
                     break;
                 case tipoString:
                     fprintf(f,"\tgetString \t@_%s\n",d->data);
                     break;	
             }
+            fprintf(f,"\tint 21h\n");
+            fprintf(f,"\tnewLine\n");
             pop(stAsm);
         }
     }
