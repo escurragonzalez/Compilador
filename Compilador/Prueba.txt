@@ -4,11 +4,10 @@ var
     [string] : [s]
 endvar
 
+a:=99
 
-e := 99.
-
-print e
-read a
-
-print "Probando print"
+if(inlist(a;[8;58+6;5]))
+{
+    print "inlist ok"
+}
 

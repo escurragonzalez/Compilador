@@ -406,10 +406,10 @@ factor:     ID
 
 f_inlist: INLIST P_A ID 
 			{
-				enqueue(&qPolaca,$3);
+				enqueueType(&qPolaca,$3,obtenerTipoDatoId($3));
 				sprintf(aux_str, "aux_%s", top(stack_pos));
-				insertarEnTablaDeSimbolos(3,aux_str,yylineno);
-				asignarTipo(aux_str,"float",yylineno);
+				insertarEnTablaDeSimbolos(obtenerTipoDatoId($3),aux_str,yylineno);
+				asignarTipo(aux_str,"int",yylineno);
 				enqueue(&qPolaca,aux_str);
 				auxOperaciones++;
 				enqueue(&qPolaca,":=");
@@ -434,7 +434,7 @@ lista_expresion:  expresion
 				}
 				if(!esAsig)
 				{
-					sprintf(aux_str, "_aux_%s", top(stack_pos));
+					sprintf(aux_str, "aux_%s", top(stack_pos));
 					enqueue(&qPolaca,aux_str);
 					enqueue(&qPolaca,"CMP");
 					enqueue(&qPolaca,"BEQ");
@@ -445,7 +445,7 @@ lista_expresion:  expresion
 			}
             | lista_expresion PUNTO_Y_COMA expresion
 			{
-				sprintf(aux_str, "_aux_%s", top(stack_pos));
+				sprintf(aux_str, "aux_%s", top(stack_pos));
 				enqueue(&qPolaca,aux_str);
 				enqueue(&qPolaca,"CMP");
 				enqueue(&qPolaca,"BEQ");
