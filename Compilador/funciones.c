@@ -400,7 +400,6 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
             if(buscarId(nodo->info)!=NULL)
             {
                 pushSt(stAsm,nodo->info,nodo->tipo);
-                printf("\nconst cadena %s %d",nodo->info,nodo->tipo);
             }
         }
 
@@ -554,7 +553,8 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
         if(strcmp(nodo->info,"PRINT")==0)
         {
             topSt(stAsm,d);
-            switch(nodo->tipo)
+            fprintf(f,"\tnewLine 1\n"); 
+            switch(d->type)
             {
                 case tipoConstReal:
                 case tipoFloat:
@@ -566,10 +566,12 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
                     break;
                 case tipoConstCadena:
                 case tipoString:
-                    fprintf(f,"\tdisplayString \t@_%s\n",d->data);
+                    fprintf(f,"\tmov dx,OFFSET \t@_%s\n",d->data);
+                    fprintf(f,"\tmov ah,9\n");
+                    fprintf(f,"\tint 21h\n");
                     break;	
             }
-            fprintf(f,"\tnewLine\n");
+            fprintf(f,"\tnewLine 1\n"); 
             pop(stAsm);
         }
 
@@ -588,7 +590,6 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
                     fprintf(f,"\tgetString \t@_%s\n",d->data);
                     break;	
             }
-            fprintf(f,"\tint 21h\n");
             fprintf(f,"\tnewLine\n");
             pop(stAsm);
         }
