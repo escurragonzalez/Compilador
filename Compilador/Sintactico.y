@@ -188,7 +188,7 @@ asignacion: 	ID OP_ASIG expresion
 
 					tipoDatoVar = -1;
 				}
-				| asignacion_multiple {fprintf(arch_reglas,"asignacion: asignacion_multiple\n");}
+				| asignacion_multiple {fprintf(arch_reglas,"asignacion: asignacion_multiple\n"); tipoDatoVar = -1;}
 
 asignacion_multiple: C_A { esAsig=1; } lista_id C_C OP_ASIG C_A lista_expresion C_C { esAsig=0; fprintf(arch_reglas,"asignacion_multiple: [ lista_id ] = [ lista_expresion ]\n");}
 
@@ -224,6 +224,7 @@ condicion_if: IF {
 			  P_A condicion P_C { 
 				sprintf(auxEtiquetas, "#fin_%s", top(stack_pos));
 				enqueue(&qPolaca, auxEtiquetas);
+				tipoDatoVar = -1;
 			}
 			L_A
 			{
@@ -256,6 +257,11 @@ comparacion:	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_MAYOR
 				expresion	
 				{
 					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					
+					if(tipoDatoCompB == sinTipo) {
+						tipoDatoCompB = tipoDatoVar;
+					}
+					
 					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
 					enqueue(&qPolaca, "CMP"); 
 					enqueue(&qPolaca,"BLE"); 
@@ -265,6 +271,11 @@ comparacion:	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_MAYOR
 				expresion	
 				{
 					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					
+					if(tipoDatoCompB == sinTipo) {
+						tipoDatoCompB = tipoDatoVar;
+					}
+					
 					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
 					enqueue(&qPolaca, "CMP"); 
 					enqueue(&qPolaca,"BLT"); 
@@ -274,6 +285,11 @@ comparacion:	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_MAYOR
 				expresion	
 				{
 					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					
+					if(tipoDatoCompB == sinTipo) {
+						tipoDatoCompB = tipoDatoVar;
+					}
+					
 					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
 					enqueue(&qPolaca, "CMP"); 
 					enqueue(&qPolaca,"BEQ"); 
@@ -282,6 +298,11 @@ comparacion:	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_MAYOR
 			|	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_IGUAL 
 				expresion	{
 					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					
+					if(tipoDatoCompB == sinTipo) {
+						tipoDatoCompB = tipoDatoVar;
+					}
+					
 					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
 					enqueue(&qPolaca, "CMP"); 
 					enqueue(&qPolaca,"BNE"); 
@@ -291,6 +312,10 @@ comparacion:	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_MAYOR
 				expresion	
 				{
 					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					
+					if(tipoDatoCompB == sinTipo) {
+						tipoDatoCompB = tipoDatoVar;
+					}
 					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
 					enqueue(&qPolaca, "CMP"); 
 					enqueue(&qPolaca,"BGE"); 
@@ -299,7 +324,12 @@ comparacion:	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_MAYOR
 			|	expresion {tipoDatoCompA=lastTypeQueue(&qPolaca);} CMP_NENIG 
 				expresion	
 				{
-					tipoDatoCompB=lastTypeQueue(&qPolaca); 
+					tipoDatoCompB=lastTypeQueue(&qPolaca);
+					
+					if(tipoDatoCompB == sinTipo) {
+						tipoDatoCompB = tipoDatoVar;
+					}
+					
 					validarTipoDato(tipoDatoCompA,tipoDatoCompB,yylineno); 
 					enqueue(&qPolaca, "CMP"); 
 					enqueue(&qPolaca,"BGT"); 
@@ -400,7 +430,7 @@ lista_expresion:  expresion
 					validarTipoDato(tipoDatoCompA, lastTypeQueue(&qPolaca), yylineno);
 
 					enqueue(&qPolaca,aux_str);
-					enqueue(&qPolaca,"=");
+					enqueue(&qPolaca,":=");
 				}
 				if(!esAsig)
 				{
@@ -408,7 +438,7 @@ lista_expresion:  expresion
 					enqueue(&qPolaca,aux_str);
 					enqueue(&qPolaca,"CMP");
 					enqueue(&qPolaca,"BEQ");
-					sprintf(aux_str,"bloq_%s", top(stack_pos));
+					sprintf(aux_str,"#bloq_%s", top(stack_pos));
 					enqueue(&qPolaca,aux_str);
 				}
 				fprintf(arch_reglas,"lista_expresion:  expresion\n");
@@ -419,7 +449,7 @@ lista_expresion:  expresion
 				enqueue(&qPolaca,aux_str);
 				enqueue(&qPolaca,"CMP");
 				enqueue(&qPolaca,"BEQ");
-				sprintf(aux_str,"bloq_%s", top(stack_pos));
+				sprintf(aux_str,"#bloq_%s", top(stack_pos));
 				enqueue(&qPolaca,aux_str);
 				fprintf(arch_reglas,"lista_expresion:  lista_expresion ; expresion\n");
 			}
