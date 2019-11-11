@@ -264,6 +264,21 @@ enum tipoDato obtenerTipo(char *tipoDato)
     return sinTipo;
 }
 
+char * descripcionTipo(_tipoDato tipo)
+{
+    switch(tipo){
+        case tipoInt:
+            return "int";
+            break;
+        case tipoFloat:
+            return "float";
+            break;
+        case tipoString:
+            return "string";
+            break;
+    }
+
+}
 // Funcion para obtener comprarador de Assembler
 char *invertirSalto(t_queue *comparador){
 	if(strcmp(comparador->last->info,"BEQ")==0)
@@ -500,7 +515,7 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
                 case tipoFloat:
                 case tipoConstReal:
                     fprintf(f,"\tfld \t@_%s\n",token);
-                    fprintf(f,"\tfild \t@_%s\n",d->data);
+                    fprintf(f,"\tfld \t@_%s\n",d->data);
                     pop(stAsm);
                 break;
             }
