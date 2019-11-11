@@ -508,14 +508,14 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
             {
                 case tipoInt:
                 case tipoConstEntero:
-                    fprintf(f,"\tfild \t@_%s\n",token);
-                    fprintf(f,"\tfild \t@_%s\n",d->data);
+                    fprintf(f,"\tfild \t@%s\n",normalizar(token));
+                    fprintf(f,"\tfild \t@%s\n",normalizar(d->data));
                     pop(stAsm);
                 break;
                 case tipoFloat:
                 case tipoConstReal:
-                    fprintf(f,"\tfld \t@_%s\n",token);
-                    fprintf(f,"\tfld \t@_%s\n",d->data);
+                    fprintf(f,"\tfld \t@%s\n",normalizar(token));
+                    fprintf(f,"\tfld \t@%s\n",normalizar(d->data));
                     pop(stAsm);
                 break;
             }
