@@ -365,7 +365,6 @@ void generarASM(t_queue *p,int auxOperaciones)
     pf=recorrerPolaca(pf,aux_q);
 
     fprintf(pf,"\n\tmov ah, 4ch\n\tint 21h\n");
-    
     fprintf(pf,"\nend");
     fclose(pf);
 }
@@ -416,8 +415,8 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
             {
                 case tipoInt:
                 case tipoConstEntero:
-                    fprintf(f,"\tfild \t@%s\n",normalizar(d->data));
-                    fprintf(f,"\t%s \t@%s\n",obtenerOperacion(oper,tipoInt),normalizar(token));
+                    fprintf(f,"\tfild \t@%s\n",normalizar(token));
+                    fprintf(f,"\t%s \t@%s\n",obtenerOperacion(oper,tipoInt),normalizar(d->data));
                     pop(stAsm);
                     strcpy(aux1,"auxE");
                     itoa(nroAuxE,aux2,10);
@@ -581,7 +580,7 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
             switch(nodo->tipo)
             {
                 case tipoFloat:
-                    fprintf(f,"\tGetFloat \t@_%s\n",d->data);
+                    fprintf(f,"\tgetFloat \t@_%s\n",d->data);
                 break;
                 case tipoInt:
                     fprintf(f,"\tGetInteger \t@_%s\n",d->data);
@@ -590,7 +589,6 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
                     fprintf(f,"\tgetString \t@_%s\n",d->data);
                     break;	
             }
-            fprintf(f,"\tnewLine\n");
             pop(stAsm);
         }
     }
@@ -609,17 +607,17 @@ char* prepararEtiqueta(char *etiq)
 
 void validarTipoDato(_tipoDato td1, _tipoDato td2, int linea) {
 
-    if(td1==tipoInt && td2!=tipoConstEntero && td2!=sinTipo)
+    if(td1==tipoInt && td2!=tipoConstEntero && td2!=tipoInt)
     {
         mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos Entero",linea);
     }
 
-    if(td1==tipoFloat && td2!=tipoConstReal && td2!=sinTipo)
+    if(td1==tipoFloat && td2!=tipoConstReal && td2!=tipoFloat)
     {
         mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos Real",linea);
     }
 
-    if(td1==tipoString && td2!=tipoConstCadena && td2!=sinTipo)
+    if(td1==tipoString && td2!=tipoConstCadena && td2!=tipoString)
     {
         mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos String",linea);
     }
@@ -658,5 +656,33 @@ char * obtenerOperacion(char * op,_tipoDato  tipo)
                 return "fsubr";
 
         break;
+    }
+}
+
+
+void validarTipoDatoExpresion(_tipoDato td1, _tipoDato td2, int linea) {
+
+    if(td1==tipoInt || td1==tipoConstEntero)
+    {
+        if(td2 != tipoInt && td2 != tipoConstEntero)
+        {
+            mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos Entero",linea);
+        }
+    }
+
+    if(td1==tipoFloat || td1==tipoConstReal)
+    {
+        if(td2 != tipoFloat && td2 != tipoConstReal)
+        {
+            mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos Entero",linea);
+        }
+    }
+
+    if(td1==tipoString || td1==tipoConstCadena)
+    {
+        if(td2 != tipoString && td2 != tipoConstCadena)
+        {
+            mensajeDeError(ErrorSintactico,"Error en asignacion por tipo de datos Entero",linea);
+        }
     }
 }

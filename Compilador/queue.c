@@ -27,7 +27,7 @@ void enqueue(t_queue *p, char *d)
 	n->pos = p->counter++;
 }
 
-void enqueueType(t_queue *p, char *d,_tipoDato tipo)
+void enqueueType(t_queue *p, char *d, _tipoDato tipo)
 {
 	enqueue(p,d);
 	p->last->tipo=tipo;
@@ -144,7 +144,12 @@ void print_file_queue(t_queue *p)
 	fclose(pf); 
 }
 
-//funcion para devolver tipo de dato de cola
+//funcion para devolver tipo de dato de cola de la ultima posicion
 _tipoDato lastTypeQueue(t_queue *p) {
 	return p->last->tipo;
+}
+
+//funcion para devolver tipo de dato de cola de la primera posicion
+_tipoDato firstTypeQueue(t_queue *p) {
+	return p->first->tipo;
 }

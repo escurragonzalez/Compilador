@@ -23,7 +23,7 @@ int esAsig=0;
 int contCondicion=0;		//contador por polaca 
 char auxEtiquetas[10];
 int auxOperaciones=0;
-_tipoDato tipoDatoVar;
+_tipoDato tipoDatoVar = -1;
 _tipoDato tipoDatoCompA;
 _tipoDato tipoDatoCompB;
 
@@ -96,7 +96,8 @@ lista_id: ID
 				if(esAsig)
 				{
 					verificarExisteId($1,yylineno);
-					enqueue(&qVariablesAsig,$1);
+					tipoDatoVar = obtenerTipoDatoId($1);
+					enqueueType(&qVariablesAsig, $1,tipoDatoVar);		//Encolar en variables con tipo de datos, usado en Asig Multiple
 				}
 				fprintf(arch_reglas,"lista_id: ID\n");
 			}
@@ -112,7 +113,10 @@ lista_id: ID
 				if(esAsig)
 				{
 					verificarExisteId($3,yylineno);
-					enqueue(&qVariablesAsig,$3);
+					tipoDatoVar = obtenerTipoDatoId($3);
+					enqueueType(&qVariablesAsig, $3,tipoDatoVar);
+
+					tipoDatoVar = -1;
 				}
 				fprintf(arch_reglas,"lista_id: lista_id , ID\n");
 			}
@@ -176,13 +180,13 @@ ciclo:	REPEAT
 asignacion: 	ID OP_ASIG expresion 
 				{
 					verificarExisteId($1,yylineno);
-					tipoDatoVar = obtenerTipoDatoId($1);
-
-					validarTipoDato(tipoDatoVar,lastTypeQueue(&qPolaca),yylineno);	// Valida si los tipos de datos son correctos
+					validarTipoDato(obtenerTipoDatoId($1),tipoDatoVar,yylineno);	// Valida si los tipos de datos son correctos
 
 					enqueueType(&qPolaca, $1,tipoDatoVar);	// encolar en Polaca
 					enqueue(&qPolaca, ":=");
 					fprintf(arch_reglas,"asignacion: ID = expresion \n");
+
+					tipoDatoVar = -1;
 				}
 				| asignacion_multiple {fprintf(arch_reglas,"asignacion: asignacion_multiple\n");}
 
@@ -317,6 +321,11 @@ factor:     ID
 				verificarExisteId($1,yylineno);
 				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
 				{
+					if(tipoDatoVar == -1) {
+						tipoDatoVar = obtenerTipoDatoId($1);
+					} else {
+						validarTipoDatoExpresion(tipoDatoVar, obtenerTipoDatoId($1), yylineno);
+					}
 					enqueueType(&qPolaca,$1,obtenerTipoDatoId($1));
 				}
 				fprintf(arch_reglas,"factor: ID\n");
@@ -325,6 +334,12 @@ factor:     ID
 			{ 
 				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
 				{
+					if(tipoDatoVar == -1) {
+						tipoDatoVar = tipoConstEntero;
+					} else {
+						validarTipoDatoExpresion(tipoDatoVar, tipoConstEntero, yylineno);
+					}
+
 					enqueueType(&qPolaca,$1,tipoConstEntero);
 				}
 				fprintf(arch_reglas,"factor: CONST_INT\n");
@@ -333,6 +348,12 @@ factor:     ID
 			{ 
 				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
 				{
+					if(tipoDatoVar == -1) {
+						tipoDatoVar = tipoConstReal;
+					} else {
+						validarTipoDatoExpresion(tipoDatoVar, tipoConstReal, yylineno);
+					}
+
 					enqueueType(&qPolaca,$1,tipoConstReal);
 				}
 				fprintf(arch_reglas,"factor: CONST_REAL\n");
@@ -341,6 +362,12 @@ factor:     ID
 			{
 				if((!is_queue_empty(&qVariablesAsig) && esAsig) || !esAsig)
 				{
+					if(tipoDatoVar == -1) {
+						tipoDatoVar = tipoConstCadena;
+					} else {
+						validarTipoDatoExpresion(tipoDatoVar, tipoConstCadena, yylineno);
+					}
+					
 					enqueueType(&qPolaca,$1,tipoConstCadena);
 				}	
 				fprintf(arch_reglas,"factor: CONST_STR\n");
@@ -367,7 +394,11 @@ lista_expresion:  expresion
 			{
 				if(esAsig && !is_queue_empty(&qVariablesAsig))
 				{
+					tipoDatoCompA = firstTypeQueue(&qVariablesAsig);
 					dequeue(&qVariablesAsig,aux_str);
+
+					validarTipoDato(tipoDatoCompA, lastTypeQueue(&qPolaca), yylineno);
+
 					enqueue(&qPolaca,aux_str);
 					enqueue(&qPolaca,"=");
 				}
