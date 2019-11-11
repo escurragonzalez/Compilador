@@ -416,7 +416,7 @@ f_inlist: INLIST P_A ID
 			} 
 			PUNTO_Y_COMA C_A lista_expresion C_C P_C
 			{
-				enqueue(&qPolaca,"#jmp");
+				enqueue(&qPolaca,"*jmp");
 				fprintf(arch_reglas,"f_inlist: INLIST ( ID ; [ lista_expresion ] )\n");
 			}
 

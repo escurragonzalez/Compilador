@@ -494,14 +494,14 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
                 case tipoInt:
                 case tipoConstEntero:
                     fprintf(f,"\tfild \t@_%s\n",token);
-                    pop(stAsm);
                     fprintf(f,"\tfild \t@_%s\n",d->data);
+                    pop(stAsm);
                 break;
                 case tipoFloat:
                 case tipoConstReal:
                     fprintf(f,"\tfld \t@_%s\n",token);
-                    pop(stAsm);
                     fprintf(f,"\tfild \t@_%s\n",d->data);
+                    pop(stAsm);
                 break;
             }
         }
@@ -547,6 +547,12 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
         {
             fprintf(f,"%s\n",prepararEtiqueta(nodo->info));
         }   
+
+        //En el caso de inlist lo manejo distinto
+        if(strchr(nodo->info, '*')!=NULL)
+        {
+            fprintf(f,"\t%s\t",prepararEtiqueta(nodo->info));
+        }  
 
         //Print
         if(strcmp(nodo->info,"PRINT")==0)
