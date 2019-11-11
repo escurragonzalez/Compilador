@@ -409,7 +409,7 @@ f_inlist: INLIST P_A ID
 				enqueueType(&qPolaca,$3,obtenerTipoDatoId($3));
 				sprintf(aux_str, "aux_%s", top(stack_pos));
 				insertarEnTablaDeSimbolos(obtenerTipoDatoId($3),aux_str,yylineno);
-				asignarTipo(aux_str,descripcionTipo(obtenerTipoDatoId($3)),yylineno);
+				//asignarTipo(aux_str,descripcionTipo(obtenerTipoDatoId($3)),yylineno);
 				enqueueType(&qPolaca,aux_str,obtenerTipoDatoId($3));
 				auxOperaciones++;
 				enqueue(&qPolaca,":=");

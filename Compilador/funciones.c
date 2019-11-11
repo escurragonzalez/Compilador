@@ -132,6 +132,34 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
                 mensajeDeError(errorEnteroFueraDeRango,valor,linea);
             }
         break;
+        case tipoFloat:
+        {
+            symrec *s;
+            s = getsym(valor);
+            if (s == 0)
+            {
+                putsym(valor,tipoFloat);
+            }
+        }
+        break;
+        case tipoInt:
+        {    symrec *s;
+            s = getsym(valor);
+            if (s == 0)
+            {
+                putsym(valor,tipoInt);
+            }
+        }
+        break;
+        case tipoString:
+        {    symrec *s;
+            s = getsym(valor);
+            if (s == 0)
+            {
+                putsym(valor,tipoConstCadena);
+            }            
+        }
+        break;
         case sinTipo:            
         	if(strlen(valor)>=CADENA_MAXIMA)
                mensajeDeError(errorCadenaDemasiadoLarga, valor,linea);
@@ -141,6 +169,7 @@ void insertarEnTablaDeSimbolos(enum tipoDato tipo,char *valor,int linea)
             {
                 putsym(valor,sinTipo);
             }
+        break;
     }
 }
 
@@ -406,7 +435,7 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
         //Variables y Constantes
         if(buscarId(nodo->info)!=NULL)
         {
-            pushSt(stAsm,nodo->info,nodo->tipo);
+            pushSt(stAsm,nodo->info,nodo->tipo);            
         }
         if(nodo->tipo==tipoConstCadena)
         {   
