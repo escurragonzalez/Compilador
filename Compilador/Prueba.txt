@@ -55,3 +55,19 @@ print e
 print "Ingrese un string"
 read s
 print s
+
+b:=3
+if(b==2 and 1==1)
+{
+    print "no ok"
+}else{
+    print "else con and ok"
+}
+
+c:=3
+if(b==c or c>5)
+{
+    print "or ok"
+}else{
+    print "nok"
+}
