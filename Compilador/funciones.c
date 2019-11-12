@@ -293,21 +293,7 @@ enum tipoDato obtenerTipo(char *tipoDato)
     return sinTipo;
 }
 
-char * descripcionTipo(_tipoDato tipo)
-{
-    switch(tipo){
-        case tipoInt:
-            return "int";
-            break;
-        case tipoFloat:
-            return "float";
-            break;
-        case tipoString:
-            return "string";
-            break;
-    }
 
-}
 // Funcion para obtener comprarador de Assembler
 char *invertirSalto(t_queue *comparador){
 	if(strcmp(comparador->last->info,"BEQ")==0)
@@ -459,8 +445,8 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
             {
                 case tipoInt:
                 case tipoConstEntero:
-                    fprintf(f,"\tfild \t@%s\n",normalizar(token));
-                    fprintf(f,"\t%s \t@%s\n",obtenerOperacion(oper,tipoInt),normalizar(d->data));
+                    fprintf(f,"\tfild \t@%s\n",normalizar(d->data));
+                    fprintf(f,"\t%s \t@%s\n",obtenerOperacion(oper,tipoInt),normalizar(token));
                     pop(stAsm);
                     strcpy(aux1,"auxE");
                     itoa(nroAuxE,aux2,10);
@@ -472,8 +458,8 @@ FILE * recorrerPolaca(FILE *pfile,t_queue *p)
                 break;
                 case tipoFloat:
                 case tipoConstReal:
-                    fprintf(f,"\tfld \t@%s\n",normalizar(d->data));
                     fprintf(f,"\tfld \t@%s\n",normalizar(token));
+                    fprintf(f,"\tfld \t@%s\n",normalizar(d->data));
                     pop(stAsm);
                     fprintf(f,"\t%s\n",obtenerOperacion(oper,tipoFloat));
                     strcpy(aux1,"auxR");

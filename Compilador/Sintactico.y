@@ -243,7 +243,7 @@ condicion:	comparacion {fprintf(arch_reglas,"condicion:	comparacion \n");}
 			| comparacion 
 			{
 				invertirSalto(&qPolaca);
-				sprintf(aux_str,"#jmp bloq_%s",top(stack_pos));
+				sprintf(aux_str,"#bloq_%s",top(stack_pos));
 				enqueue(&qPolaca,aux_str);
 			}
 			OP_OR comparacion {fprintf(arch_reglas,"condicion: comparacion OP_OR comparacion \n");}	
@@ -409,7 +409,6 @@ f_inlist: INLIST P_A ID
 				enqueueType(&qPolaca,$3,obtenerTipoDatoId($3));
 				sprintf(aux_str, "aux_%s", top(stack_pos));
 				insertarEnTablaDeSimbolos(obtenerTipoDatoId($3),aux_str,yylineno);
-				//asignarTipo(aux_str,descripcionTipo(obtenerTipoDatoId($3)),yylineno);
 				enqueueType(&qPolaca,aux_str,obtenerTipoDatoId($3));
 				auxOperaciones++;
 				enqueue(&qPolaca,":=");
